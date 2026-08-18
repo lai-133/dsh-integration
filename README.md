@@ -4,6 +4,7 @@
   <b>简体中文</b> · <a href="./README.en.md">English</a>
 </div>
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Node.js ≥ 20](https://img.shields.io/badge/Node.js-%E2%89%A520-339933.svg)
 ![Electron](https://img.shields.io/badge/Electron-43-47848F.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
@@ -156,6 +157,6 @@ npm start              # 启动
 - [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) by [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin)
 - [dshmarket](https://github.com/dsh-market/dsh-market) by [dsh-market](https://github.com/dsh-market)（MIT）
 
-## 📜 许可说明
+## 📜 License
 
-本仓库**暂未附加开源许可证**（按 GitHub 默认条款保留所有权利）。集成的插件遵循各自仓库的许可证（dsh-better-sidebar MIT、dsh-web-ui Apache-2.0、ModLens MIT、dshmarket MIT）。应用图标源自作者自备的角色设定图。
+本项目采用 [MIT License](./LICENSE)，© 2026 Azusa。集成的插件遵循各自仓库的许可证（dsh-better-sidebar MIT、dsh-web-ui Apache-2.0、ModLens MIT、dshmarket MIT）。应用图标源自作者自备的角色设定图。

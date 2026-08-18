@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "桌面版 DeepSeek Harness —— 自托管 dsh web 服务 + Electron 原生壳，集成 dsh-better-sidebar / dsh-web-ui / ModLens / awesome-dsh-plugin",
+  "license": "MIT",
   "author": "lai-133",
   "main": "src/main/main.js",
   "type": "commonjs",

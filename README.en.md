@@ -4,6 +4,7 @@
   <a href="./README.md">简体中文</a> · <b>English</b>
 </div>
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Node.js ≥ 20](https://img.shields.io/badge/Node.js-%E2%89%A520-339933.svg)
 ![Electron](https://img.shields.io/badge/Electron-43-47848F.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
@@ -156,6 +157,6 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 - [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) by [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin)
 - [dshmarket](https://github.com/dsh-market/dsh-market) by [dsh-market](https://github.com/dsh-market) (MIT)
 
-## 📜 License note
+## 📜 License
 
-This repository has **no open-source license attached yet** (all rights reserved under GitHub's default terms). The integrated plugins follow their own licenses (dsh-better-sidebar MIT, dsh-web-ui Apache-2.0, ModLens MIT, dshmarket MIT). The app icon is derived from a character sheet provided by the author.
+This project is licensed under the [MIT License](./LICENSE), © 2026 Azusa. The integrated plugins follow their own licenses (dsh-better-sidebar MIT, dsh-web-ui Apache-2.0, ModLens MIT, dshmarket MIT). The app icon is derived from a character sheet provided by the author.
