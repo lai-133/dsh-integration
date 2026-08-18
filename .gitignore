@@ -20,3 +20,12 @@ out/
 # logs
 *.log
 .DS_Store
+
+# debugging screenshots (never commit screen captures)
+studio-*.png
+desktop-*.png
+screen-*.png
+
+# stray pnpm artifacts at project root (project is npm-based)
+pnpm-lock.yaml
+pnpm-workspace.yaml
