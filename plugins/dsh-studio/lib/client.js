@@ -64,6 +64,31 @@ window.__ModuleLoader__.load({
       setTimeout(() => setStore({ toast: '' }), 3500)
     }
 
+    // ── 表面半透明化（照抄皮肤机制：皮肤靠覆盖 --dsw-alias-bg-base 等 token 让背景透出）──
+    // 默认主题的表面是纯色不透明，壁纸垫在下面看不见；启用壁纸时把表面 token
+    // 改为跟随当前主题色值的半透明，壁纸即可从面板间透出。皮肤激活时其自身机制优先。
+    // surfaceAlpha：表面不透明度（0.45=壁纸很透出，0.95=接近不透明），由壁纸面板滑块控制。
+    function applyTranslucency(enabled, alpha) {
+      const el = document.getElementById('dsh-studio-translucency')
+      if (!enabled) {
+        if (el) el.remove()
+        return
+      }
+      if (el) el.remove()
+      const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(getComputedStyle(document.body).backgroundColor)
+      const base = m ? `${m[1]},${m[2]},${m[3]}` : '21,21,23'
+      const a = Math.min(0.95, Math.max(0.45, alpha ?? 0.7))
+      const style = document.createElement('style')
+      style.id = 'dsh-studio-translucency'
+      style.textContent = `:root{` +
+        `--dsw-alias-bg-base:rgba(${base},${a});` +
+        `--dsw-alias-bg-layer-1:rgba(${base},${Math.min(0.95, a + 0.08)});` +
+        `--dsw-alias-bg-layer-2:rgba(${base},${Math.min(0.95, a + 0.12)});` +
+        `--dsw-alias-bg-layer-3:rgba(${base},${Math.min(0.95, a + 0.16)});` +
+        `--dsw-alias-bg-overlay:rgba(${base},${Math.min(0.95, a + 0.2)})}`
+      document.head.appendChild(style)
+    }
+
     function currentSessionId(ctx) {
       try {
         const bs = ctx.get('betterSidebar')
@@ -205,6 +230,10 @@ window.__ModuleLoader__.load({
               h('input', { type: 'range', min: 0, max: 30, step: 1, value: cfg.blur ?? 0, style: { flex: 1 }, onChange: (e) => setCfg({ blur: Number(e.target.value) }) }),
             ]),
             h('div', { style: rowStyle() }, [
+              h('label', { style: labelStyle() }, `壁纸透出: ${Math.round((1 - (cfg.surfaceAlpha ?? 0.7)) * 100)}%`),
+              h('input', { type: 'range', min: 0.45, max: 0.95, step: 0.05, value: cfg.surfaceAlpha ?? 0.7, style: { flex: 1 }, onChange: (e) => setCfg({ surfaceAlpha: Number(e.target.value) }) }),
+            ]),
+            h('div', { style: rowStyle() }, [
               h('label', { style: labelStyle() }, '适配方式'),
               h('select', { value: cfg.fit ?? 'cover', style: selectStyle(), onChange: (e) => setCfg({ fit: e.target.value }) },
                 ['cover', 'contain', 'fill', 'tile'].map((f) => h('option', { key: f, value: f }, { cover: '铺满（裁切）', contain: '完整显示', fill: '拉伸', tile: '平铺' }[f]))),
@@ -228,7 +257,7 @@ window.__ModuleLoader__.load({
             ]),
             h('div', { style: rowStyle() }, [
               h('button', { style: btnStyle(), onClick: async () => { await setCfg({ enabled: false, wallpaperId: '', localPath: '', file: '', source: '' }); toast('已清除壁纸') } }, '清除壁纸'),
-              h('button', { style: btnStyle(), onClick: () => setCfg({ blur: 8, fit: 'cover', pos: 'center', scale: 1 }) }, '恢复默认'),
+              h('button', { style: btnStyle(), onClick: () => setCfg({ blur: 8, fit: 'cover', pos: 'center', scale: 1, surfaceAlpha: 0.7 }) }, '恢复默认'),
             ]),
             h('div', { style: { fontSize: 11, color: 'var(--dsw-alias-label-secondary)', marginTop: 8, lineHeight: 1.5 } },
               '背景遮挡、空对话/有内容模糊等皮肤中心设置仍然生效；此处补充壁纸的大小/位置/模糊控制。'),
@@ -403,6 +432,7 @@ window.__ModuleLoader__.load({
         const root = createRoot(rootEl)
         const render = () => {
           const s = store
+          applyTranslucency(!!s.config?.enabled, s.config?.surfaceAlpha)
           root.render(
             h('div', null, [
               h(WallpaperLayer, null),
@@ -414,7 +444,12 @@ window.__ModuleLoader__.load({
         }
         const unsub = subscribe(render)
         render()
-        return () => { unsub(); root.unmount(); rootEl.remove() }
+        return () => {
+          unsub()
+          root.unmount()
+          document.getElementById('dsh-studio-translucency')?.remove()
+          rootEl.remove()
+        }
       }, 'dsh-studio: 面板与壁纸层')
     }
 
