@@ -78,20 +78,23 @@ Prerequisites: Node.js ≥ 20 (on PATH). Windows / macOS / Linux.
 
 ```sh
 npm install        # DSH runtime (@deepseek-ai/dsh) + Electron
-npm run setup      # ① installs integrated plugins into the web profile
-                   # ② generates the plugin gallery data
+npm run setup      # all automatic: ① initializes the ~/.dsh (DSH_HOME) skeleton
+                   # ② bootstraps pnpm (PATH → corepack shim → local npm install into .tools)
+                   # ③ installs the integrated plugins into the web profile
+                   # ④ generates the plugin gallery data
 npm start          # launch
 ```
 
-On Windows you can also double-click `install.cmd` (one-command setup) and `start.cmd` (launch).
+**No manual pnpm installation and no prior official `dsh` run needed** — `npm run setup` handles everything. On Windows, double-clicking `start.cmd` is the easiest: it auto-runs `npm install` when deps are missing, auto-runs setup when needed, then launches.
 
-What `npm run setup` does:
-1. Generates a `pnpm` shim via corepack (`dsh plugin` needs pnpm);
-2. Initializes `~/.dsh/profiles/web` from the official template if missing;
-3. Writes `minimumReleaseAgeExclude` into the profile's `pnpm-workspace.yaml` (bypasses the pnpm 11 release-age gate);
-4. Runs `dsh plugin --profile web add` for each plugin (official channel; packages declaring `dsh.bundle` join `dsh.profile.bundles` automatically);
-5. Runs `pnpm approve-builds --all` to allow native build scripts (node-pty etc.);
-6. **Bundle reconciliation**: when pnpm exits non-zero due to native builds (ssh2/cpu-features), the official reconcile is skipped — the script re-applies the same rule itself so every `dsh.bundle.patch`-declaring dependency joins the bundle stack (the ssh2 crypto binding is optional; its build failure is harmless).
+Detailed `npm run setup` steps:
+1. Creates the `~/.dsh` skeleton (profiles / sessions / storages);
+2. Bootstraps pnpm (3-level fallback: PATH → corepack shim → local install inside `.tools`, no admin rights needed);
+3. Initializes `~/.dsh/profiles/web` from the official template if missing;
+4. Writes `minimumReleaseAgeExclude` into the profile's `pnpm-workspace.yaml` (bypasses the pnpm 11 release-age gate);
+5. Runs `dsh plugin --profile web add` for each plugin (official channel; `dsh.bundle`-declaring packages join `dsh.profile.bundles` automatically);
+6. Runs `pnpm approve-builds --all` to allow native build scripts (node-pty etc.);
+7. **Bundle reconciliation**: when pnpm exits non-zero due to native builds (ssh2/cpu-features), the official reconcile is skipped — the script re-applies the same rule itself so every `dsh.bundle.patch`-declaring dependency joins the bundle stack (the ssh2 crypto binding is optional; its build failure is harmless).
 
 ## 🖥️ Usage
 
@@ -131,8 +134,9 @@ After the page loads, the app collects DOM evidence (client bundles of the integ
 | Issue | Fix |
 |---|---|
 | Splash keeps spinning | First start installs plugins / builds node-pty and is slow — normal; on failure the error page shows hints |
+| "profile not initialized" | Run `npm run setup` (auto-initializes ~/.dsh and installs plugins), or double-click `start.cmd` |
 | Cannot find the window | It is hidden in the tray — click the tray icon, or run `npm start` again (single instance focuses the existing window) |
-| "pnpm not found" | Run `corepack enable --install-directory .tools/bin` to regenerate the shim |
+| setup could not bootstrap pnpm | Very rare: run `npm install -g pnpm` manually, then `npm run setup` again |
 | Port busy | Default 3081 falls forward automatically; or set `DSH_DESKTOP_PORT` |
 | Running alongside web `dsh web` | Two instances sharing one DSH_HOME risk concurrent session-file writes; run only one at a time |
 | Old plugin versions installed | The profile already has `minimumReleaseAgeExclude`; if still stale, run `pnpm update @linxin666/dsh-web-ui-all` in `~/.dsh/profiles/web` |

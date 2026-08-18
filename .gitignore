@@ -10,6 +10,9 @@ third-party/
 # personal icon overrides (drop your own icon-*.png / icon.ico here)
 src/main/assets/whale/
 
+# setup completion marker
+.setup-complete
+
 # build output
 dist/
 out/

@@ -78,20 +78,23 @@ npm start
 
 ```sh
 npm install        # 安装 DSH 运行时（@deepseek-ai/dsh）+ Electron
-npm run setup      # ① 把集成插件装进 web profile（dsh-better-sidebar / ModLens / dsh-web-ui / dshmarket）
-                   # ② 生成插件精选画廊数据
+npm run setup      # 自动完成：① 初始化 ~/.dsh（DSH_HOME）骨架
+                   # ② 自动准备 pnpm（PATH 已有则直接用；否则 corepack 生成 shim；再不行就本地 npm 安装）
+                   # ③ 把集成插件装进 web profile（dsh-better-sidebar / ModLens / dsh-web-ui / dshmarket）
+                   # ④ 生成插件精选画廊数据
 npm start          # 启动桌面版
 ```
 
-Windows 用户也可以直接双击 `install.cmd`（一键安装）与 `start.cmd`（启动，自动补装缺失依赖）。
+**无需手动安装 pnpm，也无需先运行官方 `dsh` 命令初始化**——`npm run setup` 会全部自动完成。Windows 用户直接双击 `start.cmd` 最省事：缺依赖自动 `npm install`，未完成 setup 自动补跑，然后启动。
 
-`npm run setup` 做了什么：
-1. 用 corepack 生成 `pnpm` shim（`dsh plugin` 依赖 pnpm）；
-2. 若无 `~/.dsh/profiles/web` 则按官方模板初始化；
-3. 在 profile 的 `pnpm-workspace.yaml` 写入 `minimumReleaseAgeExclude`（绕过 pnpm 11 发布年龄门禁）；
-4. 逐个执行 `dsh plugin --profile web add`（官方通道，自动并入 `dsh.profile.bundles` 并挂载其 bundle patch）；
-5. `pnpm approve-builds --all` 放行 node-pty 等原生构建脚本；
-6. **bundles 校准**：pnpm 因 ssh2/cpu-features 原生构建返回非零时官方 reconcile 会被跳过，脚本按官方规则自行把声明了 `dsh.bundle.patch` 的依赖并入 bundles（ssh2 crypto 绑定为可选件，构建失败可忽略）。
+`npm run setup` 详细步骤：
+1. 自动创建 `~/.dsh` 骨架（profiles / sessions / storages）；
+2. 自动准备 pnpm（三层降级：PATH 已有 → corepack shim → 项目内 `.tools` 本地安装，全程无需管理员权限）；
+3. 若无 `~/.dsh/profiles/web` 则按官方模板初始化；
+4. 在 profile 的 `pnpm-workspace.yaml` 写入 `minimumReleaseAgeExclude`（绕过 pnpm 11 发布年龄门禁）；
+5. 逐个执行 `dsh plugin --profile web add`（官方通道，自动并入 `dsh.profile.bundles` 并挂载其 bundle patch）；
+6. `pnpm approve-builds --all` 放行 node-pty 等原生构建脚本；
+7. **bundles 校准**：pnpm 因 ssh2/cpu-features 原生构建返回非零时官方 reconcile 会被跳过，脚本按官方规则自行把声明了 `dsh.bundle.patch` 的依赖并入 bundles（ssh2 crypto 绑定为可选件，构建失败可忽略）。
 
 ## 🖥️ 使用指南
 
@@ -131,8 +134,9 @@ $env:DSH_DESKTOP_SMOKE='1'; npm start   # PowerShell
 | 现象 | 处理 |
 |---|---|
 | 启动页一直转圈 | 首次启动需安装插件/构建 node-pty，较慢属正常；失败见错误页提示 |
+| 提示 profile 未初始化 | 运行 `npm run setup`（自动初始化 ~/.dsh 并安装插件），或双击 `start.cmd` 自动补跑 |
 | 找不到窗口 | 窗口隐藏到托盘了——点托盘图标恢复，或重新运行 `npm start`（单实例会聚焦已有窗口） |
-| 提示 pnpm 未找到 | 执行 `corepack enable --install-directory .tools/bin` 重新生成 shim |
+| setup 未能自动准备 pnpm | 极少见：手动执行 `npm install -g pnpm` 后重跑 `npm run setup` |
 | 端口被占用 | 默认 3081 自动顺延；或设 `DSH_DESKTOP_PORT` |
 | 与网页端 `dsh web` 同时运行 | 同一 DSH_HOME 双实例有会话文件并发写风险，建议同一时间只开一个 |
 | 装到旧版插件 | profile 的 `pnpm-workspace.yaml` 已含 `minimumReleaseAgeExclude`；仍异常则在 `~/.dsh/profiles/web` 执行 `pnpm update @linxin666/dsh-web-ui-all` |

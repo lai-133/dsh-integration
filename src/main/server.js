@@ -5,9 +5,22 @@ const { spawn } = require('node:child_process')
 const http = require('node:http')
 const net = require('node:net')
 const path = require('node:path')
+const fs = require('node:fs')
+const os = require('node:os')
 
 const DSH_BIN = path.join(__dirname, '..', '..', 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js')
 const URL_LINE = /dsh web:\s+(http:\/\/127\.0\.0\.1:\d+)/i
+
+/** 启动前置检查：web profile 必须已初始化（npm run setup），否则给出明确指引。 */
+function assertProfileReady() {
+  const dshHome = process.env.DSH_HOME || path.join(os.homedir(), '.dsh')
+  const profilePkg = path.join(dshHome, 'profiles', 'web', 'package.json')
+  if (!fs.existsSync(profilePkg)) {
+    throw new Error(
+      'web profile 尚未初始化：请在项目目录先运行 `npm run setup`（自动初始化 ~/.dsh、pnpm 并安装集成插件），然后重新启动。',
+    )
+  }
+}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -80,6 +93,7 @@ class DshServer {
     if (this.child && this.child.exitCode === null) return this.status()
     this.stopping = false
     this.url = null
+    assertProfileReady() // 未初始化时抛出明确指引，主进程会显示错误页
 
     const wanted = Number(process.env.DSH_DESKTOP_PORT || this.preferredPort)
     const port = await findFreePort(wanted, wanted + 15)

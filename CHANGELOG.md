@@ -2,6 +2,18 @@
 
 本项目的所有显著变更都会记录在此文件。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.1.1] - 2026-08-17
+
+### 改进（全新机器零手工步骤）
+
+- **自动初始化 DSH_HOME**：`npm run setup` 自动创建 `~/.dsh` 骨架（profiles / sessions / storages），不再需要先手动运行官方 `dsh` 命令。
+- **自动准备 pnpm**：三层降级（PATH 已有 → corepack shim → 项目内 `.tools` 本地 npm 安装），无需手动安装 pnpm、无需管理员权限。
+- **预置 allowBuilds**：node-pty / ssh2 / cpu-features / cloudflared 提前写入 profile 的 `pnpm-workspace.yaml`，规避 pnpm 11 `ERR_PNPM_IGNORED_BUILDS` 返回非零导致官方 `dsh plugin` 误报失败。
+- **dsh-web-ui 聚合包跳过构建脚本安装**（`--ignore-scripts`）：其 ssh2/cloudflared/cpu-features 原生绑定均为可选件、插件自带降级，安装更快且在任何网络/工具链环境下都确定成功。
+- **安装重试与兜底**：单插件失败自动重试；仍失败则 `--ignore-scripts` 直装，依赖落盘后由 bundles 校准挂载。
+- **start.cmd 自动补跑 setup**：检测 `.setup-complete` 标记，首次启动自动完成初始化。
+- **启动前置检查**：web profile 未初始化时应用显示明确指引（不再无提示失败）。
+
 ## [0.1.0] - 2026-08-17
 
 ### 新增

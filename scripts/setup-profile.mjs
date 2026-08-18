@@ -1,15 +1,19 @@
 // setup-profile.mjs — 把四个开源集成装进 DSH 的 web profile（与网页端共享 DSH_HOME）。
 //
-// 1. 确保 web profile 存在（缺省按官方模板初始化）。
-// 2. 在 profile 的 pnpm-workspace.yaml 里写入 minimumReleaseAgeExclude
-//    （绕过 pnpm 11 对新鲜发布包的“发布年龄门禁”，避免装到旧版）。
-// 3. 用官方 `dsh plugin --profile web add <spec>` 逐个安装：
-//      dsh-better-sidebar   —— 服务化侧边栏工作台
-//      @liustack/modlens    —— ModLens 视觉引擎
-//      @linxin666/dsh-web-ui-all —— dsh-web-ui 全家桶（梁神模式/看板/Git 图谱/皮肤中心…）
-//      dshmarket            —— DSH 插件市场（覆盖 awesome-dsh-plugin 精选清单的一键安装）
-// 4. 通过 pnpm approve-builds 放行原生构建（node-pty 等）。
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+// 全新机器零手工步骤：
+//   0. 自动初始化 DSH_HOME 骨架（~/.dsh：profiles / sessions / storages）；
+//   1. 自动准备 pnpm：PATH 已有 → 直接用；否则 corepack 生成 shim；
+//      再不行 → npm 本地安装 pnpm 到 .tools 并写 shim（无需管理员权限）；
+//   2. 确保 web profile 存在（按官方模板初始化）；
+//   3. 在 profile 的 pnpm-workspace.yaml 里写入 minimumReleaseAgeExclude
+//      （绕过 pnpm 11 对新鲜发布包的“发布年龄门禁”，避免装到旧版）；
+//   4. 用官方 `dsh plugin --profile web add <spec>` 逐个安装：
+//        dsh-better-sidebar   —— 服务化侧边栏工作台
+//        @liustack/modlens    —— ModLens 视觉引擎
+//        @linxin666/dsh-web-ui-all —— dsh-web-ui 全家桶（梁神模式/看板/Git 图谱/皮肤中心…）
+//        dshmarket            —— DSH 插件市场（覆盖 awesome-dsh-plugin 精选清单的一键安装）
+//   5. pnpm approve-builds 放行原生构建（node-pty 等）；bundles 校准。
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
@@ -24,7 +28,9 @@ const profileDir = join(dshHome, 'profiles', 'web')
 const PLUGINS = [
   ['dsh-better-sidebar', 'dsh-better-sidebar@0.12.3'],
   ['ModLens', '@liustack/modlens@3.18.1'],
-  ['dsh-web-ui 全家桶', '@linxin666/dsh-web-ui-all@0.1.19'],
+  // 聚合包带 ssh2/cloudflared/cpu-features 三个重原生依赖：构建脚本易在无编译工具链
+  // 或网络受限环境失败/崩溃，且其绑定均为可选件（插件自带降级），故跳过构建脚本直装。
+  ['dsh-web-ui 全家桶', '@linxin666/dsh-web-ui-all@0.1.19', { ignoreScripts: true }],
   ['dshmarket（插件市场）', 'dshmarket@1.10.1'],
 ]
 
@@ -49,16 +55,84 @@ const MIN_RELEASE_AGE_EXCLUDE = [
   'dshmarket',
 ]
 
+/** 需要放行构建脚本的原生依赖（node-pty 终端、ssh2/cpu-features SSH、cloudflared 隧道）。
+ *  必须提前写入 allowBuilds，否则 pnpm 11 会以 ERR_PNPM_IGNORED_BUILDS 返回非零，
+ *  导致官方 `dsh plugin` 误报“pnpm failed”。 */
+const ALLOW_BUILDS = {
+  'node-pty': true,
+  ssh2: true,
+  'cpu-features': true,
+  cloudflared: true,
+}
+
+function envWithPath() {
+  return { ...process.env, DSH_HOME: dshHome, PATH: `${pnpmDir}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH}` }
+}
+
 function run(cmd, args, opts = {}) {
-  const env = { ...process.env, DSH_HOME: dshHome, PATH: `${pnpmDir}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH}` }
+  const env = envWithPath()
   console.log(`\n>>> ${cmd} ${args.join(' ')}`)
-  // 仅 .cmd shim（pnpm）需要 shell；node 直接 spawn，避免 shell 拼接警告。
-  const r = spawnSync(cmd, args, { cwd: opts.cwd || root, env, stdio: 'inherit', shell: process.platform === 'win32' && cmd.endsWith('.cmd') })
+  // node.exe 是真正的可执行文件可直接 spawn；pnpm/npm/corepack 是 .cmd shim，
+  // Windows 上必须经 shell 解析，否则 spawn 报 ENOENT。
+  const r = spawnSync(cmd, args, {
+    cwd: opts.cwd || root,
+    env,
+    stdio: opts.quiet ? 'ignore' : 'inherit',
+    shell: process.platform === 'win32' && cmd !== 'node',
+  })
   if (r.error) throw r.error
   return r.status ?? 1
 }
 
+function onPath(cmd) {
+  const r = spawnSync(cmd, ['--version'], { env: envWithPath(), stdio: 'ignore', shell: process.platform === 'win32' })
+  return !r.error && r.status === 0
+}
+
+// ── 0. DSH_HOME 骨架 ────────────────────────────────────────
+function ensureDshHome() {
+  for (const sub of ['', 'profiles', 'sessions', 'storages']) {
+    mkdirSync(join(dshHome, sub), { recursive: true })
+  }
+  console.log(`[setup-profile] DSH_HOME 已就绪: ${dshHome}`)
+}
+
+// ── 1. pnpm 自动准备：PATH → corepack → npm 本地安装兜底 ─────
+function ensurePnpm() {
+  if (onPath('pnpm')) {
+    console.log('[setup-profile] ✅ 检测到 pnpm（PATH）')
+    return
+  }
+  mkdirSync(pnpmDir, { recursive: true })
+  if (onPath('corepack')) {
+    console.log('[setup-profile] 未找到 pnpm，通过 corepack 生成 shim…')
+    if (run('corepack', ['enable', '--install-directory', pnpmDir], { quiet: true }) === 0) {
+      console.log('[setup-profile] 预热 corepack pnpm（首次运行会下载 pnpm，约 1 分钟）…')
+      run('corepack', ['pnpm', '--version'], { quiet: true })
+      if (onPath('pnpm')) {
+        console.log('[setup-profile] ✅ pnpm 已就绪（corepack shim）')
+        return
+      }
+    }
+    console.warn('[setup-profile] corepack 路径失败，改用本地 npm 安装 pnpm…')
+  } else {
+    console.log('[setup-profile] 未找到 corepack，改用本地 npm 安装 pnpm…')
+  }
+  // 兜底：把 pnpm 装进项目 .tools（无需管理员权限），并写 shim
+  if (run('npm', ['install', '--prefix', join(root, '.tools'), 'pnpm@11'], { quiet: true }) !== 0) {
+    throw new Error('无法自动准备 pnpm：请手动安装（npm install -g pnpm）后重试')
+  }
+  const pnpmCjs = join(root, '.tools', 'node_modules', 'pnpm', 'bin', 'pnpm.cjs')
+  writeFileSync(join(pnpmDir, 'pnpm.cmd'), `@echo off\r\nnode "%~dp0..\\node_modules\\pnpm\\bin\\pnpm.cjs" %*\r\n`, 'utf8')
+  writeFileSync(join(pnpmDir, 'pnpm.ps1'), `node "$PSScriptRoot\\..\\node_modules\\pnpm\\bin\\pnpm.cjs" $args\r\n`, 'utf8')
+  writeFileSync(join(pnpmDir, 'pnpm'), `#!/bin/sh\nexec node "$(dirname "$0")/../node_modules/pnpm/bin/pnpm.cjs" "$@"\n`, 'utf8')
+  if (!existsSync(pnpmCjs) || !onPath('pnpm')) throw new Error('pnpm 本地安装后仍不可用')
+  console.log('[setup-profile] ✅ pnpm 已就绪（项目本地安装）')
+}
+
+// ── 2. profile 模板 ──────────────────────────────────────────
 function ensureProfile() {
+  mkdirSync(profileDir, { recursive: true })
   if (existsSync(join(profileDir, 'package.json'))) {
     console.log(`[setup-profile] 使用已有 profile: ${profileDir}`)
     return
@@ -81,21 +155,39 @@ function patchPnpmWorkspace() {
     const block = `\n# 绕过 pnpm 11 的发布年龄门禁：这些包发布较新，门禁会静默装回旧版。\nminimumReleaseAgeExclude:\n${MIN_RELEASE_AGE_EXCLUDE.map((p) => `  - '${p}'`).join('\n')}\n`
     text = text.trimEnd() + '\n' + block
   }
+  if (!text.includes('allowBuilds')) {
+    const block = `\n# 提前放行原生构建脚本，避免 pnpm 以 ERR_PNPM_IGNORED_BUILDS 返回非零\n# （官方 dsh plugin 会把非零误报为失败）。\nallowBuilds:\n${Object.keys(ALLOW_BUILDS).map((p) => `  ${p}: true`).join('\n')}\n`
+    text = text.trimEnd() + '\n' + block
+  }
   writeFileSync(file, text, 'utf8')
   console.log(`[setup-profile] pnpm-workspace.yaml 已更新: ${file}`)
 }
 
 function installPlugins() {
-  for (const [label, spec] of PLUGINS) {
+  for (const entry of PLUGINS) {
+    const [label, spec, flags] = entry
     const name = spec.startsWith('@') ? `@${spec.split('@')[1]}` : spec.split('@')[0]
-    const code = run('node', [dshBin, 'plugin', '--profile', 'web', 'add', spec])
-    const pkg = JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8'))
-    const landed = name in (pkg.dependencies ?? {})
+    const addArgs = flags?.ignoreScripts ? [spec, '--ignore-scripts'] : [spec]
+    let code = run('node', [dshBin, 'plugin', '--profile', 'web', 'add', ...addArgs])
+    let landed = name in (JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')).dependencies ?? {})
+    if (code !== 0 && !landed) {
+      // 网络/解析抖动：先收敛依赖树，再重试一次
+      console.warn(`[setup-profile] ${label} 首次安装返回 ${code}，重试…`)
+      run('pnpm', ['install'], { cwd: profileDir, quiet: true })
+      code = run('node', [dshBin, 'plugin', '--profile', 'web', 'add', ...addArgs])
+      landed = name in (JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')).dependencies ?? {})
+    }
+    if (code !== 0 && !landed) {
+      // 最后兜底：跳过构建脚本直装（原生件缺失时插件自带降级），依赖落盘后由 bundles 校准挂载
+      console.warn(`[setup-profile] ${label} 构建脚本异常，改用 --ignore-scripts 安装（原生特性降级）…`)
+      code = run('pnpm', ['add', spec, '--ignore-scripts'], { cwd: profileDir })
+      landed = name in (JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')).dependencies ?? {})
+    }
     if (code === 0 && landed) {
       console.log(`[setup-profile] ✅ ${label} 已安装（${spec}）`)
     } else if (landed) {
-      // 依赖已写入 package.json（pnpm 可能因原生构建脚本返回非零，但不影响安装结果）
-      console.warn(`[setup-profile] ⚠️ ${label} 依赖已写入，但 pnpm 返回 ${code}（多为 ssh2/cpu-features 原生构建失败，可忽略）`)
+      // 依赖已写入 package.json（构建脚本失败不影响安装结果）
+      console.warn(`[setup-profile] ⚠️ ${label} 依赖已写入，但 pnpm 返回 ${code}（多为原生构建失败，可忽略）`)
     } else {
       console.error(`[setup-profile] ❌ 安装 ${label} 失败（exit ${code}）`)
       process.exitCode = 1
@@ -129,10 +221,14 @@ function reconcileBundles() {
 }
 
 function approveBuilds() {
-  // node-pty / ssh2 / cloudflared / cpu-features 等原生依赖需要放行构建脚本。
-  const r = run('pnpm', ['approve-builds', '--all'], { cwd: profileDir })
-  if (r !== 0) {
-    console.warn('[setup-profile] approve-builds 未执行成功，请手动在 profile 目录运行 `pnpm approve-builds --all`。')
+  // 安全网：allowBuilds 已预置，此处只为捕获未知原生依赖；失败不影响安装结果。
+  try {
+    const r = run('pnpm', ['approve-builds', '--all'], { cwd: profileDir })
+    if (r !== 0) {
+      console.warn('[setup-profile] approve-builds 返回非零（通常无害，原生依赖已在 allowBuilds 预置）。')
+    }
+  } catch (error) {
+    console.warn(`[setup-profile] approve-builds 未能执行（${error.message}，可忽略）。`)
   }
 }
 
@@ -147,6 +243,8 @@ if (isMain) {
     console.error('[setup-profile] 请先运行 `npm install` 安装 DSH 运行时。')
     process.exit(1)
   }
+  ensureDshHome()
+  ensurePnpm()
   ensureProfile()
   patchPnpmWorkspace()
   installPlugins()
