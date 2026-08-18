@@ -1,6 +1,6 @@
 // make-icon.mjs — 从一张方形源图生成应用图标：
 //   node scripts/make-icon.mjs <源图> <输出目录>
-// 默认：node scripts/make-icon.mjs head-final.png src/main/assets/whale
+// 默认：node scripts/make-icon.mjs head-final.png src/main/assets
 // 生成 icon-{16,24,32,48,64,128,256}.png 与 icon.ico（PNG 压缩多尺寸 ICO）。
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -13,7 +13,7 @@ const sharp = require(join(dirname(dirname(fileURLToPath(import.meta.url))), 'no
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const [srcArg, outArg] = process.argv.slice(2)
 const src = resolve(srcArg || join(root, 'head-final.png'))
-const outDir = resolve(outArg || join(root, 'src', 'main', 'assets', 'whale'))
+const outDir = resolve(outArg || join(root, 'src', 'main', 'assets'))
 const sizes = [16, 24, 32, 48, 64, 128, 256]
 
 async function main() {

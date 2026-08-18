@@ -1,6 +1,9 @@
 # dsh-desktop · 桌面版 DeepSeek Harness
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+<div align="center">
+  <b>简体中文</b> · <a href="./README.en.md">English</a>
+</div>
+
 ![Node.js ≥ 20](https://img.shields.io/badge/Node.js-%E2%89%A520-339933.svg)
 ![Electron](https://img.shields.io/badge/Electron-43-47848F.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
@@ -42,7 +45,7 @@ dsh-desktop/
 │   │   ├── gallery.js     # 插件精选画廊窗口
 │   │   ├── splash.html    # 启动页
 │   │   ├── error.html     # 启动失败页
-│   │   └── assets/        # 应用图标（默认图标随仓库分发；个性化图标放 assets/whale/，不入库）
+│   │   └── assets/        # 应用图标；放入 assets/whale/（不入库）可覆盖为个人图标
 │   ├── preload/preload.js # contextBridge：openExternal / serverStatus / restartServer / notify / galleryData
 │   └── gallery/           # 画廊前端 + plugins.json（由 build-gallery.mjs 生成）
 ├── scripts/
@@ -95,6 +98,7 @@ Windows 用户也可以直接双击 `install.cmd`（一键安装）与 `start.cm
 - **关闭窗口 ≠ 退出**：点 X 隐藏到托盘（首次会弹通知）；彻底退出用托盘右键 →「退出」
 - **托盘菜单**：显示主窗口 / 插件精选 / 重启 DSH 服务器 / 在浏览器中打开 / 退出
 - **插件精选**：应用菜单「插件 → 插件精选」
+- **自定义图标**：把自制的 `icon-{16,32,256}.png` 与 `icon.ico` 放进 `src/main/assets/whale/`，应用启动时自动优先使用（该目录不入库）
 - **视觉引擎**：粘贴图片或让 agent 读图（`modlens_read_image`），由 ModLens 完成（约 5–10 秒/张，需配置视觉引擎，见下）
 
 ### 视觉引擎（ModLens）配置
@@ -152,6 +156,6 @@ npm start              # 启动
 - [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) by [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin)
 - [dshmarket](https://github.com/dsh-market/dsh-market) by [dsh-market](https://github.com/dsh-market)（MIT）
 
-## 📄 License
+## 📜 许可说明
 
-MIT © [lai-133](https://github.com/lai-133)。集成插件遵循各自仓库许可证（dsh-better-sidebar MIT、dsh-web-ui Apache-2.0、ModLens MIT、dshmarket MIT）。
+本仓库**暂未附加开源许可证**（按 GitHub 默认条款保留所有权利）。集成的插件遵循各自仓库的许可证（dsh-better-sidebar MIT、dsh-web-ui Apache-2.0、ModLens MIT、dshmarket MIT）。应用图标源自作者自备的角色设定图。

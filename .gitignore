@@ -7,9 +7,8 @@ node_modules/
 # third-party reference clones (not part of this repo)
 third-party/
 
-# personal/local customization: whale-girl icons & source art
+# personal icon overrides (drop your own icon-*.png / icon.ico here)
 src/main/assets/whale/
-head-final.png
 
 # build output
 dist/
