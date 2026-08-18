@@ -91,10 +91,10 @@ Detailed `npm run setup` steps:
 1. Creates the `~/.dsh` skeleton (profiles / sessions / storages);
 2. Bootstraps pnpm (3-level fallback: PATH → corepack shim → local install inside `.tools`, no admin rights needed);
 3. Initializes `~/.dsh/profiles/web` from the official template if missing;
-4. Writes `minimumReleaseAgeExclude` into the profile's `pnpm-workspace.yaml` (bypasses the pnpm 11 release-age gate);
-5. Runs `dsh plugin --profile web add` for each plugin (official channel; `dsh.bundle`-declaring packages join `dsh.profile.bundles` automatically);
-6. Runs `pnpm approve-builds --all` to allow native build scripts (node-pty etc.);
-7. **Bundle reconciliation**: when pnpm exits non-zero due to native builds (ssh2/cpu-features), the official reconcile is skipped — the script re-applies the same rule itself so every `dsh.bundle.patch`-declaring dependency joins the bundle stack (the ssh2 crypto binding is optional; its build failure is harmless).
+4. Writes `minimumReleaseAgeExclude` (bypasses the pnpm 11 release-age gate) and `allowBuilds` (node-pty / ssh2 / cpu-features / cloudflared, avoiding the `ERR_PNPM_IGNORED_BUILDS` non-zero exit) into the profile's `pnpm-workspace.yaml`;
+5. Runs `dsh plugin --profile web add` for each plugin (official channel; `dsh.bundle`-declaring packages join `dsh.profile.bundles` automatically; a failed add is retried);
+6. Installs the dsh-web-ui aggregate with `--ignore-scripts` (its ssh2 / cloudflared / cpu-features native bindings are all optional and the plugins degrade gracefully — installation succeeds on any network/toolchain);
+7. **Bundle reconciliation**: when pnpm exits non-zero due to native builds, the official reconcile is skipped — the script re-applies the same rule itself so every `dsh.bundle.patch`-declaring dependency joins the bundle stack.
 
 ## 🖥️ Usage
 
@@ -139,6 +139,7 @@ After the page loads, the app collects DOM evidence (client bundles of the integ
 | setup could not bootstrap pnpm | Very rare: run `npm install -g pnpm` manually, then `npm run setup` again |
 | Port busy | Default 3081 falls forward automatically; or set `DSH_DESKTOP_PORT` |
 | Running alongside web `dsh web` | Two instances sharing one DSH_HOME risk concurrent session-file writes; run only one at a time |
+| SSH crypto acceleration / cloudflared tunnel unavailable | The dsh-web-ui aggregate skips native build scripts by default (optional bindings). For full native features run `pnpm rebuild ssh2 cloudflared cpu-features` inside `~/.dsh/profiles/web` (needs a working build/download environment) |
 | Old plugin versions installed | The profile already has `minimumReleaseAgeExclude`; if still stale, run `pnpm update @linxin666/dsh-web-ui-all` in `~/.dsh/profiles/web` |
 
 ## 🛠️ Development

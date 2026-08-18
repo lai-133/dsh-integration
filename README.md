@@ -91,10 +91,10 @@ npm start          # 启动桌面版
 1. 自动创建 `~/.dsh` 骨架（profiles / sessions / storages）；
 2. 自动准备 pnpm（三层降级：PATH 已有 → corepack shim → 项目内 `.tools` 本地安装，全程无需管理员权限）；
 3. 若无 `~/.dsh/profiles/web` 则按官方模板初始化；
-4. 在 profile 的 `pnpm-workspace.yaml` 写入 `minimumReleaseAgeExclude`（绕过 pnpm 11 发布年龄门禁）；
-5. 逐个执行 `dsh plugin --profile web add`（官方通道，自动并入 `dsh.profile.bundles` 并挂载其 bundle patch）；
-6. `pnpm approve-builds --all` 放行 node-pty 等原生构建脚本；
-7. **bundles 校准**：pnpm 因 ssh2/cpu-features 原生构建返回非零时官方 reconcile 会被跳过，脚本按官方规则自行把声明了 `dsh.bundle.patch` 的依赖并入 bundles（ssh2 crypto 绑定为可选件，构建失败可忽略）。
+4. 在 profile 的 `pnpm-workspace.yaml` 写入 `minimumReleaseAgeExclude`（绕过 pnpm 11 发布年龄门禁）与 `allowBuilds`（node-pty / ssh2 / cpu-features / cloudflared，规避 `ERR_PNPM_IGNORED_BUILDS` 非零退出）；
+5. 逐个执行 `dsh plugin --profile web add`（官方通道，自动并入 `dsh.profile.bundles` 并挂载其 bundle patch；单插件失败自动重试）；
+6. dsh-web-ui 聚合包以 `--ignore-scripts` 安装（其 ssh2 / cloudflared / cpu-features 原生绑定均为可选件，缺失时插件自带降级，确保任何网络/工具链环境都安装成功）；
+7. **bundles 校准**：pnpm 因原生构建返回非零时官方 reconcile 会被跳过，脚本按官方规则自行把声明了 `dsh.bundle.patch` 的依赖并入 bundles。
 
 ## 🖥️ 使用指南
 
@@ -139,6 +139,7 @@ $env:DSH_DESKTOP_SMOKE='1'; npm start   # PowerShell
 | setup 未能自动准备 pnpm | 极少见：手动执行 `npm install -g pnpm` 后重跑 `npm run setup` |
 | 端口被占用 | 默认 3081 自动顺延；或设 `DSH_DESKTOP_PORT` |
 | 与网页端 `dsh web` 同时运行 | 同一 DSH_HOME 双实例有会话文件并发写风险，建议同一时间只开一个 |
+| SSH 加密加速 / cloudflared 隧道不可用 | dsh-web-ui 聚合包默认跳过原生构建脚本（可选件）。需要完整原生能力时，在 `~/.dsh/profiles/web` 执行 `pnpm rebuild ssh2 cloudflared cpu-features`（需可用的编译/下载环境） |
 | 装到旧版插件 | profile 的 `pnpm-workspace.yaml` 已含 `minimumReleaseAgeExclude`；仍异常则在 `~/.dsh/profiles/web` 执行 `pnpm update @linxin666/dsh-web-ui-all` |
 
 ## 🛠️ 开发与贡献
