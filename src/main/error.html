@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:;" />
+  <title>DeepSeek Harness 启动失败</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0b0f1a;
+      color: #dbe4ff;
+      font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    }
+    .card {
+      max-width: 560px;
+      padding: 32px 36px;
+      border: 1px solid #3a4a7a;
+      border-radius: 12px;
+      background: #121a30;
+    }
+    h1 { margin: 0 0 10px; font-size: 20px; color: #ffb4b4; }
+    pre {
+      background: #0b0f1a;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #c8d3f5;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .hint { font-size: 13px; color: #93a3d6; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>DeepSeek Harness 服务启动失败</h1>
+    <pre id="message"></pre>
+    <div class="hint">
+      常见原因：<br />
+      ① 项目依赖未安装 —— 在 <b>dsh-desktop</b> 目录执行 <code>npm install</code> 与 <code>npm run setup</code>；<br />
+      ② 需要 Node.js（≥20）在 PATH 中；<br />
+      ③ web profile 插件安装失败 —— 查看日志后重试，或在托盘菜单「重启 DSH 服务器」。<br />
+      修复后请从托盘或菜单重新启动服务。
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search)
+    document.getElementById('message').textContent = params.get('message') || '未知错误'
+  </script>
+</body>
+</html>

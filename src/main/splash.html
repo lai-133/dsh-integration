@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:;" />
+  <title>正在启动 DeepSeek Harness…</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      background: #0b0f1a;
+      color: #dbe4ff;
+      font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      user-select: none;
+    }
+    .logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #6d8bff, #4d6bfe 60%, #2f4ad8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 34px;
+      font-weight: 700;
+      box-shadow: 0 0 40px rgba(77, 107, 254, 0.45);
+    }
+    .status { font-size: 14px; color: #93a3d6; }
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border: 3px solid rgba(147, 163, 214, 0.25);
+      border-top-color: #6d8bff;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="logo">H</div>
+  <div class="spinner"></div>
+  <div class="status">正在启动 DeepSeek Harness 服务（dsh web）…</div>
+</body>
+</html>

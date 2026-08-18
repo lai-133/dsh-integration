@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# local toolchain
+.tools/
+
+# third-party reference clones (not part of this repo)
+third-party/
+
+# personal/local customization: whale-girl icons & source art
+src/main/assets/whale/
+head-final.png
+
+# build output
+dist/
+out/
+
+# logs
+*.log
+.DS_Store
