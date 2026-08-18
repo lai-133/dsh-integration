@@ -12,7 +12,27 @@ window.__ModuleLoader__.load({
     const { createRoot } = require('react-dom/client')
 
     const name = 'studio'
-    const inject = ['slots']
+    const inject = ['slots', 'locale']
+    // 侧边栏座位条目要求 locale（渲染器用它绑定 t 注入组件）；缺 locale 的条目会被静默丢弃。
+    const NS = 'studio'
+    const dict = {
+      zh: {
+        skinCenter: '皮肤中心',
+        skinCenterHint: '皮肤中心（壁纸与皮肤）',
+        collab: '协作',
+        collabHint: '协作看板（子代理与任务投递）',
+        wallpaper: '界面壁纸',
+        chooseWallpaper: '选择本地或壁纸引擎壁纸',
+      },
+      en: {
+        skinCenter: 'Skin Center',
+        skinCenterHint: 'Skin Center (wallpaper & skins)',
+        collab: 'Collab',
+        collabHint: 'Collab board (subagents & task dispatch)',
+        wallpaper: 'Wallpaper',
+        chooseWallpaper: 'Choose local or Wallpaper Engine wallpaper',
+      },
+    }
 
     // ── 工具 ────────────────────────────────────────────────
     async function call(path, payload) {
@@ -117,16 +137,19 @@ window.__ModuleLoader__.load({
     }
 
     // ── 壁纸背景层 ──────────────────────────────────────────
+    // 注意：必须 z-index:-1 且背景透明。DSH 根节点是静态定位，正 z 索引的
+    // fixed 层会盖住整个 UI；-1 让壁纸垫在界面之下（皮肤背景同样画在 body 上）。
+    // ⚠️ 所有 hooks 必须无条件先调用（提前 return 会导致 hooks 数量变化 → React #310 崩溃）。
     function WallpaperLayer() {
       const s = useStore()
+      const [videoFailed, setVideoFailed] = React.useState(false)
       const cfg = s.config
+      useEffect(() => { setVideoFailed(false) }, [cfg?.localPath || cfg?.file || ''])
       if (!cfg || !cfg.enabled) return null
       const src = cfg.localPath || cfg.file || ''
       if (!src) return null
       const isVideo = cfg.type === 'video' || /\.(mp4|webm|mov|mkv)$/i.test(src)
       const poster = cfg.poster || ''
-      const [videoFailed, setVideoFailed] = React.useState(false)
-      useEffect(() => { setVideoFailed(false) }, [src])
       // 注意：必须 z-index:-1 且背景透明。DSH 根节点是静态定位，正 z 索引的
       // fixed 层会盖住整个 UI；-1 让壁纸垫在界面之下（皮肤背景同样画在 body 上）。
       const style = {
@@ -403,26 +426,28 @@ window.__ModuleLoader__.load({
     // ── apply ────────────────────────────────────────────────
     function apply(ctx) {
       loadConfig()
-      ctx.effect(() => ctx.slots.inject('sidebar.remote', () => ctx.slots.register({
-        name: 'sidebar.remote',
+      ctx.effect(() => ctx.locale.register(NS, dict), 'dsh-studio: locale 词典')
+      // ui-sidebar 只渲染 sidebar.workspaces（单槽，ui-workspace 独占）/ sidebar.settings /
+      // sidebar.footer.action（多条目）三个座位；皮肤中心与协作入口都放 footer.action，
+      // 与检查更新、移动端远程控制同级。
+      ctx.effect(() => ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
+        name: 'sidebar.footer.action',
+        locale: NS,
         id: 'studio-skin-center',
         order: 10,
-        label: () => '皮肤中心',
       }, function SkinCenterEntry() {
         const s = useStore()
         return h(SidebarButton, { emoji: '🎨', label: '皮肤中心（壁纸与皮肤）', active: s.skinPanel, onClick: () => setStore({ skinPanel: !s.skinPanel }) })
       })), 'dsh-studio: 皮肤中心入口')
 
-      ctx.effect(() => ctx.slots.inject('sidebar.remote', () => ctx.slots.register({
-        name: 'sidebar.remote',
+      ctx.effect(() => ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
+        name: 'sidebar.footer.action',
+        locale: NS,
         id: 'studio-collab',
         order: 20,
-        label: () => '协作',
       }, function CollabEntry() {
         const s = useStore()
-        return h('div', { style: { padding: '0 6px 6px' } }, [
-          h(SidebarButton, { emoji: '🤝', label: '协作看板（子代理与任务投递）', active: s.collabPanel, onClick: () => setStore({ collabPanel: !s.collabPanel }) }),
-        ])
+        return h(SidebarButton, { emoji: '🤝', label: '协作看板（子代理与任务投递）', active: s.collabPanel, onClick: () => setStore({ collabPanel: !s.collabPanel }) })
       })), 'dsh-studio: 协作入口')
 
       ctx.effect(() => {

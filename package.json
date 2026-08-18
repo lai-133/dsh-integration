@@ -18,7 +18,8 @@
     "gallery:build": "node scripts/build-gallery.mjs"
   },
   "dependencies": {
-    "@deepseek-ai/dsh": "0.1.0-rc.6"
+    "@deepseek-ai/dsh": "0.1.0-rc.6",
+    "dsh-studio": "file:D:/deepseek/dsh-desktop/plugins/dsh-studio"
   },
   "devDependencies": {
     "electron": "^43.4.0"
