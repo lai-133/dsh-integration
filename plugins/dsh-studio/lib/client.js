@@ -99,9 +99,14 @@ window.__ModuleLoader__.load({
       const src = cfg.localPath || cfg.file || ''
       if (!src) return null
       const isVideo = cfg.type === 'video' || /\.(mp4|webm|mov|mkv)$/i.test(src)
+      const poster = cfg.poster || ''
+      const [videoFailed, setVideoFailed] = React.useState(false)
+      useEffect(() => { setVideoFailed(false) }, [src])
+      // 注意：必须 z-index:-1 且背景透明。DSH 根节点是静态定位，正 z 索引的
+      // fixed 层会盖住整个 UI；-1 让壁纸垫在界面之下（皮肤背景同样画在 body 上）。
       const style = {
-        position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none', overflow: 'hidden',
-        background: '#000',
+        position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none', overflow: 'hidden',
+        background: 'transparent',
       }
       const mediaStyle = {
         width: '100%', height: '100%',
@@ -110,10 +115,21 @@ window.__ModuleLoader__.load({
         transform: `scale(${cfg.scale})`,
         filter: cfg.blur ? `blur(${cfg.blur}px)` : undefined,
       }
+      // 视频加载/解码失败（如 HEVC）时回退封面图，绝不黑屏
+      if (isVideo && !videoFailed) {
+        return h('div', { style }, [
+          h('video', {
+            key: src, src, poster: poster || undefined,
+            autoPlay: true, loop: true, muted: true, playsInline: true,
+            preload: 'metadata',
+            onError: () => setVideoFailed(true),
+            style: mediaStyle,
+          }),
+        ])
+      }
+      const fallback = poster || src
       return h('div', { style }, [
-        isVideo
-          ? h('video', { key: src, src, autoPlay: true, loop: true, muted: true, playsInline: true, style: mediaStyle })
-          : h('img', { key: src, src, style: mediaStyle, draggable: false }),
+        h('img', { key: fallback, src: fallback, style: mediaStyle, draggable: false }),
       ])
     }
 
@@ -126,7 +142,7 @@ window.__ModuleLoader__.load({
         { key: 'local', title: '本地（~/.dsh/studio-wallpapers 与 Pictures）', items: s.wallpapers.filter((w) => w.source === 'local') },
       ]
       async function pick(w) {
-        await call('wallpaper-config', { action: 'set', config: { source: w.source, wallpaperId: w.id, localPath: w.file, file: w.file, type: w.type, enabled: true } })
+        await call('wallpaper-config', { action: 'set', config: { source: w.source, wallpaperId: w.id, localPath: w.file, file: w.file, type: w.type, poster: w.poster || '', enabled: true } })
         await loadConfig()
         onClose()
         toast(`壁纸已应用：${w.title}`)
