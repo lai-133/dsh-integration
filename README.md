@@ -34,6 +34,8 @@
 | [ModLens](https://github.com/liustack/modlens) | 视觉引擎插件：给纯文本模型补上视觉，`modlens_read_image` 工具 + `(modlens vision)` 模型项 | [liustack](https://github.com/liustack) · MIT |
 | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) | 社区精选插件清单（本应用的「插件精选」画廊数据来源） | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin) · 清单文档 |
 | [dshmarket](https://github.com/dsh-market/dsh-market) | DSH 可视化插件市场：设置页内浏览、一键安装/升级社区插件 | [dsh-market](https://github.com/dsh-market) · MIT |
+| [dsh-task-relay](https://github.com/LeslieWylie/dsh-task-relay) | 跨会话/子代理共享任务队列 + 交接摘要（协作看板的任务投递底座） | [LeslieWylie](https://github.com/LeslieWylie) · MIT |
+| [dsh-studio](plugins/dsh-studio/README.md) | 本仓库自研工作台增强：侧边栏「皮肤中心」入口（本地 / 壁纸引擎壁纸、大小/位置/模糊）+「协作」看板（子代理树、投递任务、发送消息、中断） | 本仓库 · MIT |
 
 > 桌面端与网页端（`dsh web`）**共享同一 `DSH_HOME`**：会话、存储、profile 完全连续。桌面端默认监听 `127.0.0.1:3081`（环境变量 `DSH_DESKTOP_PORT` 可改），端口被占用自动顺延。
 
@@ -106,6 +108,8 @@ npm start          # 启动桌面版
 - **关闭窗口 ≠ 退出**：点 X 隐藏到托盘（首次会弹通知）；彻底退出用托盘右键 →「退出」
 - **托盘菜单**：显示主窗口 / 插件精选 / 重启 DSH 服务器 / 在浏览器中打开 / 退出
 - **插件精选**：应用菜单「插件 → 插件精选」
+- **皮肤中心**：侧边栏 🎨 入口（与检查更新同级）——选择本地或 Wallpaper Engine 壁纸作为界面背景，可调大小/位置/模糊；皮肤一键应用
+- **协作看板**：侧边栏 🤝 入口——当前会话子代理实时列表，▼ 展开发送消息 / 中断 / 投递任务到共享队列
 - **自定义图标**：把自制的 `icon-{16,32,256}.png` 与 `icon.ico` 放进 `src/main/assets/whale/`，应用启动时自动优先使用（该目录不入库）
 - **视觉引擎**：粘贴图片或让 agent 读图（`modlens_read_image`），由 ModLens 完成（约 5–10 秒/张，需配置视觉引擎，见下）
 

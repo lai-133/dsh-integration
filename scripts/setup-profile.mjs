@@ -32,6 +32,10 @@ const PLUGINS = [
   // 或网络受限环境失败/崩溃，且其绑定均为可选件（插件自带降级），故跳过构建脚本直装。
   ['dsh-web-ui 全家桶', '@linxin666/dsh-web-ui-all@0.1.19', { ignoreScripts: true }],
   ['dshmarket（插件市场）', 'dshmarket@1.10.1'],
+  // 协作看板：跨会话/子代理共享任务队列 + 交接摘要（社区项目，MIT）
+  ['dsh-task-relay（任务接力）', 'github:LeslieWylie/dsh-task-relay'],
+  // 本仓库自带工作台增强：侧边栏「皮肤中心」入口（WE/本地壁纸、大小/位置/模糊）+「协作」看板
+  ['dsh-studio（工作台增强）', `file:${join(root, 'plugins', 'dsh-studio')}`],
 ]
 
 const PROFILE_PACKAGE_JSON = {

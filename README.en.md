@@ -34,6 +34,8 @@ Put [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) in
 | [ModLens](https://github.com/liustack/modlens) | Vision engine plugin: gives text-only models sight, `modlens_read_image` tool + `(modlens vision)` model entries | [liustack](https://github.com/liustack) · MIT |
 | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) | Curated community plugin list (data source of the in-app gallery) | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin) · list document |
 | [dshmarket](https://github.com/dsh-market/dsh-market) | Visual plugin market inside DSH settings: browse, one-click install/upgrade community plugins | [dsh-market](https://github.com/dsh-market) · MIT |
+| [dsh-task-relay](https://github.com/LeslieWylie/dsh-task-relay) | Cross-session/subagent shared task queue + handoff summaries (task-dispatch backbone of the collab board) | [LeslieWylie](https://github.com/LeslieWylie) · MIT |
+| [dsh-studio](plugins/dsh-studio/README.md) | In-repo workbench enhancement: sidebar "Skin Center" entry (local / Wallpaper Engine wallpapers with size/position/blur) + "Collab" board (subagent tree, task dispatch, message, interrupt) | this repo · MIT |
 
 > The desktop app **shares the same `DSH_HOME`** with the web UI (`dsh web`): sessions, storage and profiles are fully continuous. The desktop server listens on `127.0.0.1:3081` by default (override with `DSH_DESKTOP_PORT`); it falls forward automatically when the port is busy.
 
@@ -106,6 +108,8 @@ Detailed `npm run setup` steps:
 - **Closing the window ≠ quitting**: X hides to the tray (a notification explains this the first time); quit via tray right-click →「退出」
 - **Tray menu**: show window / plugin gallery / restart DSH server / open in browser / quit
 - **Plugin gallery**: app menu「插件 → 插件精选」
+- **Skin Center**: sidebar 🎨 entry (same level as Check Updates / Mobile Remote) — pick a local or Wallpaper Engine wallpaper as the UI background with size/position/blur controls; one-click skin apply
+- **Collab board**: sidebar 🤝 entry — live subagent tree of the current session; ▼ expands message / interrupt / dispatch-task actions
 - **Custom icons**: put your own `icon-{16,32,256}.png` and `icon.ico` into `src/main/assets/whale/` — the app prefers them at startup (the directory is git-ignored)
 - **Vision**: paste an image or ask the agent to read one (`modlens_read_image`), handled by ModLens (~5–10 s/image, needs a vision engine, see below)
 

@@ -1,0 +1,4 @@
+# dsh-studio bundle patch: host row (both halves served from this package).
+- insert:
+    - id: studio
+      name: 'dsh-studio'

@@ -2,6 +2,16 @@
 
 本项目的所有显著变更都会记录在此文件。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.1.2] - 2026-08-18
+
+### 新增
+
+- **dsh-studio 插件**（本仓库自研，`plugins/dsh-studio/`，纯 JS 免构建）：
+  - 侧边栏「皮肤中心」一级入口（🎨，与检查更新/移动端远程控制同级）：选择**本地或 Wallpaper Engine 壁纸**（扫描全部 Steam 库 Workshop，图片/视频/场景三类）、大小（适配/平铺/缩放）、九宫格位置、模糊度 0–30px；皮肤列表一键应用。
+  - 侧边栏「协作看板」入口（🤝）：当前会话子代理实时树（5s 刷新），▼ 展开「发送消息 / 中断 / 投递任务」（`subagents.followup/interrupt` + dsh-task-relay 共享队列）。
+  - 宿主 `/studio/*` 路由（loopback 信任围栏）、`/studio/media` Range 媒体流、配置持久化 `~/.dsh/studio.json`。
+- **集成 dsh-task-relay**（跨会话/子代理任务队列 + 交接摘要），作为协作看板投递底座。
+
 ## [0.1.1] - 2026-08-17
 
 ### 改进（全新机器零手工步骤）

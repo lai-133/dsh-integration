@@ -1,0 +1,25 @@
+{
+  "name": "dsh-studio",
+  "version": "0.1.0",
+  "description": "dsh-desktop 工作台增强：侧边栏「皮肤中心」入口（本地/Wallpaper Engine 壁纸选择、大小/位置/模糊）与「协作」看板（子代理树、投递任务、发送消息、中断）",
+  "type": "module",
+  "main": "lib/index.js",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml"
+  ],
+  "license": "MIT"
+}
