@@ -4,6 +4,10 @@
   <a href="./README.md">简体中文</a> · <b>English</b>
 </div>
 
+<p align="center">
+  <img src="docs/banner.png" alt="dsh-desktop banner" width="100%" />
+</p>
+
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Node.js ≥ 20](https://img.shields.io/badge/Node.js-%E2%89%A520-339933.svg)
 ![Electron](https://img.shields.io/badge/Electron-43-47848F.svg)
