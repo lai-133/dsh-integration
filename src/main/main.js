@@ -310,8 +310,9 @@ function registerIpc() {
 
 // ── 生命周期 ────────────────────────────────────────────────
 app.whenReady().then(async () => {
-  // Windows：任务栏分组与图标关联（配合 BrowserWindow icon 使用鲸鱼娘头像）
-  if (process.platform === 'win32') app.setAppUserModelId('com.dsh.desktop')
+  // 注意：不要设置 AppUserModelID。已实测（HICON 提取 + 任务栏截图）：窗口图标
+  // 本身是鲸鱼娘，但设置 AUMID 后 Windows 任务栏按 exe（electron.exe）图标分组，
+  // 显示 Electron 默认图标。不设 AUMID 时任务栏跟随窗口图标。打包后再由安装器注册 AUMID。
   server = new DshServer({
     onUrl: () => loadMainWindow(),
     onExit: ({ wasRunning }) => {

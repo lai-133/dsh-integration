@@ -20,7 +20,7 @@ npm run setup
 
 - **选择本地或壁纸引擎壁纸**：扫描所有 Steam 库的 `steamapps/workshop/content/431960`（Wallpaper Engine Workshop），列出图片 / 视频 / 场景三类壁纸（场景仅显示封面）；本地目录为 `~/.dsh/studio-wallpapers` 与 `~/Pictures` 顶层图片。
 - **大小 / 位置 / 模糊控制**：适配方式（铺满 / 完整显示 / 拉伸 / 平铺）、九宫格位置、缩放 0.5–2×、模糊度 0–30px（默认 8px，防止工作区看不清）。
-- **皮肤列表**：列出 dsh-skins 已安装的皮肤，一键应用（`dsh skin use <id>`）；试穿等完整功能仍在 设置 → 皮肤中心。
+- **皮肤列表**：列出 dsh-skins 已安装的皮肤，一键应用（`dsh skin use <id>`）。设置里的原「皮肤中心」入口已合并到本侧边栏入口（插件 bundle patch 自动禁用 `ui-skin-center`），背景遮挡 / 空对话 / 有内容模糊设置由本插件在同一命名空间（`skin-background`）接管。
 - 配置持久化在 `~/.dsh/studio.json`（原子写入）。
 
 ### 协作看板（侧边栏 🤝）

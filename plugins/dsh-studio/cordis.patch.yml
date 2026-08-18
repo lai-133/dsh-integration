@@ -2,3 +2,8 @@
 - insert:
     - id: studio
       name: 'dsh-studio'
+# 皮肤中心已合并到侧边栏（本插件的 🎨 入口）：禁用 dsh-web-ui 在设置里的原入口，
+# 其「背景遮挡/空对话模糊/有内容模糊」命名空间（skin-background）由本插件接管。
+# 与 profile 层 cordis.patch.yml 的同类条目等效，保证任何安装方式下合并都不回退。
+- id: ui-skin-center
+  disabled: true
