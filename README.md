@@ -93,6 +93,16 @@ npm start          # 启动桌面版
 
 **无需手动安装 pnpm，也无需先运行官方 `dsh` 命令初始化**——`npm run setup` 会全部自动完成。Windows 用户直接双击 `start.cmd` 最省事：缺依赖自动 `npm install`，未完成 setup 自动补跑，然后启动。
 
+### 📦 离线 / 免 GitHub 分发（国内用户）
+
+安装过程**不依赖 GitHub**（依赖的是 npm 源与 Electron 二进制，均已内置 npmmirror 国内镜像）。无法登录 GitHub 的朋友可以这样拿：
+
+1. 把项目文件夹打成 ZIP（排除 `node_modules/`、`.tools/`、`third-party/`、`.git/`）直接发给对方；
+2. 对方安装 **Node.js ≥ 20**（国内可从 https://npmmirror.com/mirrors/node/ 下载 LTS MSI）；
+3. 解压 ZIP → 双击 `start.cmd` → 全自动完成 npm 安装、环境初始化、插件安装，然后启动。
+
+> 想改回官方源：删除 `.npmrc`，或删掉 `start.cmd` 中两行 `set ELECTRON_MIRROR / set npm_config_registry`。
+
 `npm run setup` 详细步骤：
 1. 自动创建 `~/.dsh` 骨架（profiles / sessions / storages）；
 2. 自动准备 pnpm（三层降级：PATH 已有 → corepack shim → 项目内 `.tools` 本地安装，全程无需管理员权限）；

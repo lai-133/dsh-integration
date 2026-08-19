@@ -93,6 +93,16 @@ npm start          # launch
 
 **No manual pnpm installation and no prior official `dsh` run needed** — `npm run setup` handles everything. On Windows, double-clicking `start.cmd` is the easiest: it auto-runs `npm install` when deps are missing, auto-runs setup when needed, then launches.
 
+### 📦 Offline / GitHub-free distribution (China)
+
+Installing **does not depend on GitHub** (it depends on the npm registry and the Electron binary, both routed through the npmmirror mirror by default). For friends who cannot reach GitHub:
+
+1. ZIP the project folder (excluding `node_modules/`, `.tools/`, `third-party/`, `.git/`) and send it directly;
+2. They install **Node.js ≥ 20** (LTS MSI from https://npmmirror.com/mirrors/node/ in China);
+3. Unzip → double-click `start.cmd` → npm install, environment init and plugin install all run automatically, then the app starts.
+
+> To switch back to the official sources: delete `.npmrc`, or remove the two `set ELECTRON_MIRROR / set npm_config_registry` lines from `start.cmd`.
+
 Detailed `npm run setup` steps:
 1. Creates the `~/.dsh` skeleton (profiles / sessions / storages);
 2. Bootstraps pnpm (3-level fallback: PATH → corepack shim → local install inside `.tools`, no admin rights needed);

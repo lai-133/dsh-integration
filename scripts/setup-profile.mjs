@@ -70,7 +70,14 @@ const ALLOW_BUILDS = {
 }
 
 function envWithPath() {
-  return { ...process.env, DSH_HOME: dshHome, PATH: `${pnpmDir}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH}` }
+  return {
+    ...process.env,
+    DSH_HOME: dshHome,
+    PATH: `${pnpmDir}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH}`,
+    // 国内镜像默认值（用户已自行设置的环境变量优先），保证 pnpm/corepack 拉包不卡
+    npm_config_registry: process.env.npm_config_registry || 'https://registry.npmmirror.com',
+    COREPACK_NPM_REGISTRY: process.env.COREPACK_NPM_REGISTRY || 'https://registry.npmmirror.com',
+  }
 }
 
 function run(cmd, args, opts = {}) {
