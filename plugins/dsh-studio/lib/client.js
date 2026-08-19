@@ -138,7 +138,10 @@ window.__ModuleLoader__.load({
         `[class*="_row"],[class*="_main"],[class*="_content"],[class*="_layout"],` +
         `[class*="_column"],[class*="_header"],[class*="_footer"],[class*="_toolbar"],` +
         `[class*="_bar"],[class*="_scroll"],[class*="_inner"],[class*="_outer"],` +
-        `[class*="_wrap"],[class*="_container"]{background-color:transparent!important}` +
+        `[class*="_wrap"],[class*="_container"]{background-color:transparent!important;border-color:transparent!important}` +
+        // 侧边栏页脚（检查更新/皮肤中心等）上边界分隔线等浅色描边一并透明
+        `[class*="_footer"]::before,[class*="_footer"]::after,[class*="_sidebar"]::before,[class*="_sidebar"]::after` +
+        `{background:transparent!important;border-color:transparent!important;box-shadow:none!important}` +
         // 输入框毛玻璃：包含输入框的卡片（uV2eYG_card 等）加模糊玻璃底，
         // 压掉背后的亮壁纸（“周围发白”），输入内容清晰可读。
         `div[class*="_card"]:has(textarea[class*="_input"]){` +
@@ -252,12 +255,23 @@ window.__ModuleLoader__.load({
       const scrim = scrimOpacity > 0
         ? h('div', { style: { position: 'absolute', inset: 0, zIndex: 1, background: `rgba(0,0,0,${scrimOpacity})` } })
         : null
+      // 界面毛玻璃：垫在壁纸之上、UI 之下的轻量磨砂层（backdrop blur + 极淡底色）。
+      // 让对话文字在花哨壁纸上清晰可读，同时保留壁纸观感。
+      const glassBlur = Number(cfg.glassBlur ?? 0)
+      const glass = glassBlur > 0
+        ? h('div', { style: {
+            position: 'absolute', inset: 0, zIndex: 1,
+            backdropFilter: `blur(${glassBlur}px)`,
+            WebkitBackdropFilter: `blur(${glassBlur}px)`,
+            background: 'rgba(232,236,245,0.08)',
+          } })
+        : null
       // 场景壁纸（type: scene）没有媒体文件，用封面渲染；封面也失败则不渲染（绝不出黑块）
       if (!src) {
         if (!poster || posterFailed) return null
         return h('div', { style }, [
           h('img', { key: mediaUrl(poster), src: mediaUrl(poster), style: mediaStyle, draggable: false, onError: () => setPosterFailed(true) }),
-          scrim,
+          glass, scrim,
         ])
       }
       const isVideo = cfg.type === 'video' || /\.(mp4|webm|mov|mkv)$/i.test(src)
@@ -272,7 +286,7 @@ window.__ModuleLoader__.load({
             onError: () => setVideoFailed(true),
             style: mediaStyle,
           }),
-          scrim,
+          glass, scrim,
         ])
       }
       // 视频回退封面也失败时，静默隐藏（保持透明，让主题背景透出），避免纯黑块
@@ -282,7 +296,7 @@ window.__ModuleLoader__.load({
       const fallback = mediaUrl(isVideo ? poster || src : src || poster)
       return h('div', { style }, [
         h('img', { key: fallback, src: fallback, style: mediaStyle, draggable: false, onError: () => setPosterFailed(true) }),
-        scrim,
+        glass, scrim,
       ])
     }
 
@@ -404,6 +418,10 @@ window.__ModuleLoader__.load({
             h('div', { style: settingRow() }, [
               h('label', { style: settingLabel() }, `壁纸透出 ${Math.round((1 - (cfg.surfaceAlpha ?? 0.1)) * 100)}%`),
               h('input', { type: 'range', min: 0.01, max: 0.95, step: 0.01, value: cfg.surfaceAlpha ?? 0.1, style: rangeInput(), onChange: (e) => setCfg({ surfaceAlpha: Number(e.target.value) }) }),
+            ]),
+            h('div', { style: settingRow() }, [
+              h('label', { style: settingLabel() }, `界面毛玻璃 ${cfg.glassBlur ?? 8}px`),
+              h('input', { type: 'range', min: 0, max: 24, step: 1, value: cfg.glassBlur ?? 8, style: rangeInput(), onChange: (e) => setCfg({ glassBlur: Number(e.target.value) }) }),
             ]),
             h('div', { style: settingRow() }, [
               h('label', { style: settingLabel() }, '适配方式'),
