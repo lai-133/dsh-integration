@@ -123,9 +123,15 @@ window.__ModuleLoader__.load({
         `--aion-bg-active:rgba(${base},${up(0.14)})}` +
         // 皮肤画在 body 的内联 background-image（如 blue-fantasy 的鲸鱼插画）；
         // !important 压过内联样式，只清图片、保留背景色与全部皮肤 token。
-        `body{background-image:none!important}` +
-        // 兜底：部分皮肤把画布画在 html 或 ::before 上。
-        `html{background-image:none!important}`
+        // ⚠️ 背景色必须一起清透明：body/html 不透明背景会盖住 z-index:-1 的壁纸层
+        // （canvas 透传同理），清透明后壁纸层成为最底可见层，UI 正常压在壁纸之上。
+        `html,body{background-image:none!important;background-color:transparent!important}` +
+        // DSH 壳 / aionui 面板大量使用硬编码浅色半透明表面（白块）：
+        // rgba(255,255,255,.45~.6)、rgba(243,245,251,.5) 等，不走 token。
+        // 按类名模式统一压透明（哈希后缀随版本变化，结构名稳定），让壁纸透出。
+        `[class*="_frame"],[class*="_root"],[class*="_card"],[class*="_panel"],` +
+        `[class*="_pane"],[class*="_col"],[class*="_tabBar"],[class*="_searchBox"],` +
+        `[class*="aionui-"],[class*="_paneCard"],[class*="_bottomPanel"]{background-color:transparent!important}`
       document.head.appendChild(style)
     }
 
@@ -214,11 +220,11 @@ window.__ModuleLoader__.load({
         cfg.scrimEnabled !== undefined
           ? (cfg.scrimEnabled ? (cfg.scrimOpacity ?? 0.4) : 0)
           : (bg.enabled ? (bg.opacity ?? 0) : 0)))
-      // 注意：层必须 z-index:0（不能用 -1）。实测：-1 层在 body/html 不透明背景
-      // （含透传到 canvas 的 body 背景色）下会垫到背景之下，壁纸与背景遮挡全部不可见；
-      // 0 层位于画布之上、DSH 主容器（z-index:30）之下，壁纸/遮挡稳定可见。
+      // 注意：层必须 z-index:-1（垫在所有内容之下，UI 永不遮挡），且 body/html
+      // 背景色已被 applyTranslucency 清透明（否则不透明背景会把 -1 层盖住，
+      // 壁纸与背景遮挡全部不可见）。
       const style = {
-        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden',
+        position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none', overflow: 'hidden',
         background: 'transparent',
       }
       const mediaStyle = {
