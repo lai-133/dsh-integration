@@ -208,9 +208,17 @@ window.__ModuleLoader__.load({
       const poster = cfg.poster || ''
       // 模糊：优先皮肤中心1的「有内容模糊」（bg 命名空间），未启用/未读到则回退 cfg.blur
       const blur = bg.enabled ? (bg.blurContent || cfg.blur || 0) : (cfg.blur ?? 0)
-      const scrimOpacity = bg.enabled ? Math.min(1, Math.max(0, bg.opacity ?? 0)) : 0
+      // 背景遮挡（压暗壁纸，避免亮色壁纸让页面发白）：
+      // 优先 studio 自有配置（scrimEnabled/scrimOpacity），兼容旧 skin-background 命名空间。
+      const scrimOpacity = Math.min(1, Math.max(0,
+        cfg.scrimEnabled !== undefined
+          ? (cfg.scrimEnabled ? (cfg.scrimOpacity ?? 0.4) : 0)
+          : (bg.enabled ? (bg.opacity ?? 0) : 0)))
+      // 注意：层必须 z-index:0（不能用 -1）。实测：-1 层在 body/html 不透明背景
+      // （含透传到 canvas 的 body 背景色）下会垫到背景之下，壁纸与背景遮挡全部不可见；
+      // 0 层位于画布之上、DSH 主容器（z-index:30）之下，壁纸/遮挡稳定可见。
       const style = {
-        position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none', overflow: 'hidden',
+        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden',
         background: 'transparent',
       }
       const mediaStyle = {
@@ -221,7 +229,7 @@ window.__ModuleLoader__.load({
         filter: blur ? `blur(${blur}px)` : undefined,
       }
       const scrim = scrimOpacity > 0
-        ? h('div', { style: { position: 'absolute', inset: 0, background: `rgba(0,0,0,${scrimOpacity})` } })
+        ? h('div', { style: { position: 'absolute', inset: 0, zIndex: 1, background: `rgba(0,0,0,${scrimOpacity})` } })
         : null
       // 场景壁纸（type: scene）没有媒体文件，用封面渲染；封面也失败则不渲染（绝不出黑块）
       if (!src) {
@@ -352,15 +360,15 @@ window.__ModuleLoader__.load({
               h('label', { style: settingLabel() }, '启用壁纸'),
               h('input', { type: 'checkbox', checked: !!cfg.enabled, onChange: (e) => setCfg({ enabled: e.target.checked }) }),
             ]),
-            // ── 皮肤中心1 的「背景」设置（同一命名空间，原入口已被禁用后在此接管）──
+            // ── 背景遮挡（压暗壁纸）──
             h('div', { style: { ...sectionTitle(), marginTop: 14 } }, '背景遮挡与模糊'),
             h('div', { style: settingRow() }, [
               h('label', { style: settingLabel() }, '背景遮挡'),
-              h('input', { type: 'checkbox', checked: !!s.bg?.enabled, onChange: (e) => setBgField('enabled', e.target.checked) }),
+              h('input', { type: 'checkbox', checked: cfg.scrimEnabled !== undefined ? !!cfg.scrimEnabled : !!s.bg?.enabled, onChange: (e) => { setBgField('enabled', e.target.checked); setCfg({ scrimEnabled: e.target.checked }) } }),
             ]),
             h('div', { style: settingRow() }, [
-              h('label', { style: settingLabel() }, `遮挡强度 ${Math.round((s.bg?.opacity ?? 0.4) * 100)}%`),
-              h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: s.bg?.opacity ?? 0.4, style: rangeInput(), onChange: (e) => setBgField('backgroundOpacity', Number(e.target.value)) }),
+              h('label', { style: settingLabel() }, `遮挡强度 ${Math.round((cfg.scrimEnabled ? (cfg.scrimOpacity ?? 0.4) : (s.bg?.opacity ?? 0.4)) * 100)}%`),
+              h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: cfg.scrimEnabled ? (cfg.scrimOpacity ?? 0.4) : (s.bg?.opacity ?? 0.4), style: rangeInput(), onChange: (e) => { setBgField('backgroundOpacity', Number(e.target.value)); setCfg({ scrimOpacity: Number(e.target.value) }) } }),
             ]),
             h('div', { style: settingRow() }, [
               h('label', { style: settingLabel() }, `空对话模糊 ${s.bg?.blurEmpty ?? 0}px`),
