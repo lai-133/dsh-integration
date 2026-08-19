@@ -100,7 +100,7 @@ window.__ModuleLoader__.load({
       if (el) el.remove()
       const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(getComputedStyle(document.body).backgroundColor)
       const base = m ? `${m[1]},${m[2]},${m[3]}` : '21,21,23'
-      const a = Math.min(0.95, Math.max(0.05, alpha ?? 0.7))
+      const a = Math.min(0.95, Math.max(0.01, alpha ?? 0.7))
       const up = (v) => Math.min(0.95, a + v)
       // 已激活皮肤会把 --aion-* 映射到 body[data-dsh-*]（如 blue-fantasy），
       // 需同特异性覆盖才能让右侧面板同样透出。
@@ -374,7 +374,7 @@ window.__ModuleLoader__.load({
               '背景遮挡与模糊作用于壁纸层；原 设置 → 皮肤中心 已合并至此。'),
             h('div', { style: settingRow() }, [
               h('label', { style: settingLabel() }, `壁纸透出 ${Math.round((1 - (cfg.surfaceAlpha ?? 0.1)) * 100)}%`),
-              h('input', { type: 'range', min: 0.05, max: 0.95, step: 0.05, value: cfg.surfaceAlpha ?? 0.1, style: rangeInput(), onChange: (e) => setCfg({ surfaceAlpha: Number(e.target.value) }) }),
+              h('input', { type: 'range', min: 0.01, max: 0.95, step: 0.01, value: cfg.surfaceAlpha ?? 0.1, style: rangeInput(), onChange: (e) => setCfg({ surfaceAlpha: Number(e.target.value) }) }),
             ]),
             h('div', { style: settingRow() }, [
               h('label', { style: settingLabel() }, '适配方式'),
