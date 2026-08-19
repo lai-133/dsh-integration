@@ -87,7 +87,8 @@ window.__ModuleLoader__.load({
     // ── 表面半透明化（照抄皮肤机制：皮肤靠覆盖 --dsw-alias-bg-base 等 token 让背景透出）──
     // 默认主题的表面是纯色不透明，壁纸垫在下面看不见；启用壁纸时把表面 token
     // 改为跟随当前主题色值的半透明，壁纸即可从面板间透出。皮肤激活时其自身机制优先。
-    // surfaceAlpha：表面不透明度（0.45=壁纸很透出，0.95=接近不透明），由壁纸面板滑块控制。
+    // surfaceAlpha：表面不透明度（0.1=壁纸 90% 透出≈桌面壁纸观感，0.95=接近不透明），
+    // 由壁纸面板滑块控制。同时接管右侧面板（aionui）的 --aion-bg-* 表面 token。
     // 同时抑制已激活皮肤的 body 背景画（皮肤艺术图）：壁纸启用后只显示所选壁纸，
     // 否则 contain/平铺等适配方式下，壁纸四周仍透出皮肤旧背景（“残留旧壁纸”）。
     function applyTranslucency(enabled, alpha) {
@@ -99,15 +100,27 @@ window.__ModuleLoader__.load({
       if (el) el.remove()
       const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(getComputedStyle(document.body).backgroundColor)
       const base = m ? `${m[1]},${m[2]},${m[3]}` : '21,21,23'
-      const a = Math.min(0.95, Math.max(0.45, alpha ?? 0.7))
+      const a = Math.min(0.95, Math.max(0.05, alpha ?? 0.7))
+      const up = (v) => Math.min(0.95, a + v)
+      // 已激活皮肤会把 --aion-* 映射到 body[data-dsh-*]（如 blue-fantasy），
+      // 需同特异性覆盖才能让右侧面板同样透出。
+      const SKIN_ATTRS = ['blue-fantasy', 'whale-song', 'harbor', 'retro', 'ths', 'xp', 'dragon-heir', 'minecraft', 'miku', 'trading']
       const style = document.createElement('style')
       style.id = 'dsh-studio-translucency'
       style.textContent = `:root{` +
         `--dsw-alias-bg-base:rgba(${base},${a});` +
-        `--dsw-alias-bg-layer-1:rgba(${base},${Math.min(0.95, a + 0.08)});` +
-        `--dsw-alias-bg-layer-2:rgba(${base},${Math.min(0.95, a + 0.12)});` +
-        `--dsw-alias-bg-layer-3:rgba(${base},${Math.min(0.95, a + 0.16)});` +
-        `--dsw-alias-bg-overlay:rgba(${base},${Math.min(0.95, a + 0.2)})}` +
+        `--dsw-alias-bg-layer-1:rgba(${base},${up(0.08)});` +
+        `--dsw-alias-bg-layer-2:rgba(${base},${up(0.12)});` +
+        `--dsw-alias-bg-layer-3:rgba(${base},${up(0.16)});` +
+        `--dsw-alias-bg-overlay:rgba(${base},${up(0.2)})}` +
+        `${SKIN_ATTRS.map((s) => `body[data-dsh-${s}]`).join(',')}{` +
+        `--aion-bg-base:rgba(${base},${a});` +
+        `--aion-bg-1:rgba(${base},${up(0.08)});` +
+        `--aion-bg-2:rgba(${base},${up(0.12)});` +
+        `--aion-bg-3:rgba(${base},${up(0.16)});` +
+        `--aion-bg-4:rgba(${base},${up(0.2)});` +
+        `--aion-bg-hover:rgba(${base},${up(0.08)});` +
+        `--aion-bg-active:rgba(${base},${up(0.14)})}` +
         // 皮肤画在 body 的内联 background-image（如 blue-fantasy 的鲸鱼插画）；
         // !important 压过内联样式，只清图片、保留背景色与全部皮肤 token。
         `body{background-image:none!important}` +
@@ -358,8 +371,8 @@ window.__ModuleLoader__.load({
             h('div', { style: { fontSize: 11, color: 'var(--dsw-alias-label-secondary)', marginTop: 6 } },
               '背景遮挡与模糊作用于壁纸层；原 设置 → 皮肤中心 已合并至此。'),
             h('div', { style: settingRow() }, [
-              h('label', { style: settingLabel() }, `壁纸透出 ${Math.round((1 - (cfg.surfaceAlpha ?? 0.7)) * 100)}%`),
-              h('input', { type: 'range', min: 0.45, max: 0.95, step: 0.05, value: cfg.surfaceAlpha ?? 0.7, style: rangeInput(), onChange: (e) => setCfg({ surfaceAlpha: Number(e.target.value) }) }),
+              h('label', { style: settingLabel() }, `壁纸透出 ${Math.round((1 - (cfg.surfaceAlpha ?? 0.1)) * 100)}%`),
+              h('input', { type: 'range', min: 0.05, max: 0.95, step: 0.05, value: cfg.surfaceAlpha ?? 0.1, style: rangeInput(), onChange: (e) => setCfg({ surfaceAlpha: Number(e.target.value) }) }),
             ]),
             h('div', { style: settingRow() }, [
               h('label', { style: settingLabel() }, '适配方式'),
@@ -386,7 +399,7 @@ window.__ModuleLoader__.load({
             ]),
             h('div', { style: { ...settingRow(), marginTop: 12, justifyContent: 'flex-end', gap: 8 } }, [
               h('button', { style: btnStyle(), onClick: async () => { await setCfg({ enabled: false, wallpaperId: '', localPath: '', file: '', poster: '', source: '' }); toast('已清除壁纸') } }, '清除壁纸'),
-              h('button', { style: btnStyle(), onClick: () => setCfg({ blur: 0, fit: 'cover', pos: 'center', scale: 1, surfaceAlpha: 0.7 }) }, '恢复默认'),
+              h('button', { style: btnStyle(), onClick: () => setCfg({ blur: 0, fit: 'cover', pos: 'center', scale: 1, surfaceAlpha: 0.1 }) }, '恢复默认'),
             ]),
           ]),
           // ── 皮肤（风格对齐原版皮肤中心网格卡片）──
