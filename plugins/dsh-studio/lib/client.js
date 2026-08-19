@@ -248,7 +248,9 @@ window.__ModuleLoader__.load({
       }
       // 视频回退封面也失败时，静默隐藏（保持透明，让主题背景透出），避免纯黑块
       if (posterFailed) return null
-      const fallback = mediaUrl(poster || src)
+      // 图片/场景壁纸优先渲染真实媒体文件（如场景壁纸提取出的宽幅背景），
+      // 封面（poster）仅在无媒体时兜底；视频解码失败时则回退封面图。
+      const fallback = mediaUrl(isVideo ? poster || src : src || poster)
       return h('div', { style }, [
         h('img', { key: fallback, src: fallback, style: mediaStyle, draggable: false, onError: () => setPosterFailed(true) }),
         scrim,

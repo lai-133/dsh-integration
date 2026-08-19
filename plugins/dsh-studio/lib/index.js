@@ -89,6 +89,110 @@ async function listLocalWallpapers() {
   return out
 }
 
+// ── 场景壁纸全分辨率背景提取 ──────────────────────────────────
+// 场景壁纸（type: scene）在 Workshop 目录里通常只有一张**方形** preview.jpg 缩略图，
+// 而桌面端 Wallpaper Engine 渲染的是 scene.pkg 内嵌的**宽幅全分辨率**背景
+// （如 7680x4800 的 mip 链：7680/3840/1920/960/480...）。直接用 preview 当壁纸会
+// 明显「缺左右两边」。这里解析 PKGV 包，把内嵌 JPEG（兜底 PNG）中合适的
+// 一张提取并缓存到 ~/.dsh/studio-wallpapers/.we-cache/（本地壁纸目录，媒体路由放行）。
+
+/** JPEG 的 SOF 段解析宽高（用于选 mip 级）；非 SOF 结构返回 null。 */
+function jpegDims(buf, start) {
+  let i = start + 2 // FFD8 之后
+  const len = buf.length
+  while (i + 9 < len) {
+    if (buf[i] !== 0xFF) { i++; continue }
+    const marker = buf[i + 1]
+    if (marker === 0xD8 || marker === 0x01) { i += 2; continue } // SOI / TEM
+    if (marker === 0xD9 || marker === 0xDA) return null // EOI / SOS
+    const segLen = (buf[i + 2] << 8) | buf[i + 3]
+    if (segLen < 2) return null
+    const isSof = marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC
+    if (isSof) {
+      return { width: (buf[i + 7] << 8) | buf[i + 8], height: (buf[i + 5] << 8) | buf[i + 6] }
+    }
+    i += 2 + segLen
+  }
+  return null
+}
+
+/** 在 pkg 字节流里找内嵌 JPEG（FFD8FF…FFD9），选宽度 ≤ 2560 的最大 mip；否则取最大。 */
+function findEmbeddedImage(buf) {
+  const candidates = []
+  const len = buf.length
+  for (let i = 0; i < len - 3; i++) {
+    if (buf[i] !== 0xFF || buf[i + 1] !== 0xD8 || buf[i + 2] !== 0xFF) continue
+    let end = -1
+    for (let j = i + 3; j < len - 1; j++) {
+      if (buf[j] === 0xFF && buf[j + 1] === 0xD9) { end = j + 2; break }
+    }
+    if (end <= i + 10) continue
+    const dims = jpegDims(buf, i)
+    candidates.push({ data: buf.subarray(i, end), width: dims?.width ?? 0, size: end - i })
+    i = end - 1
+  }
+  if (candidates.length > 0) {
+    const under = candidates.filter((c) => c.width > 0 && c.width <= 2560)
+    const pool = under.length > 0 ? under : candidates
+    pool.sort((a, b) => a.width - b.width)
+    return { data: pool[pool.length - 1].data, ext: '.jpg' }
+  }
+  // PNG 兜底：取最大的一个 PNG 流
+  let best = null
+  let bestSize = 0
+  for (let i = 0; i < len - 8; i++) {
+    if (buf[i] !== 0x89 || buf[i + 1] !== 0x50 || buf[i + 2] !== 0x4E || buf[i + 3] !== 0x47) continue
+    for (let j = i + 8; j < len - 8; j++) {
+      if (buf[j] === 0x49 && buf[j + 1] === 0x45 && buf[j + 2] === 0x4E && buf[j + 3] === 0x44) {
+        const end = j + 8
+        if (end - i > bestSize) { bestSize = end - i; best = { data: buf.subarray(i, end), ext: '.png' } }
+        i = end - 1
+        break
+      }
+    }
+  }
+  return best
+}
+
+function weCacheDir() {
+  return join(dshHome(), 'studio-wallpapers', '.we-cache')
+}
+
+/** 按 workshopId 找到所在 Steam 库的 Workshop 目录。 */
+function weWorkshopDir(id) {
+  for (const root of steamRoots()) {
+    const dir = join(root.workshop, id)
+    if (existsSync(dir)) return dir
+  }
+  return ''
+}
+
+/** 提取场景壁纸的全分辨率背景（带缓存：pkg mtime 不变即复用）。失败返回 ''。 */
+function extractSceneImage(workshopDir) {
+  const pkg = join(workshopDir, 'scene.pkg')
+  if (!existsSync(pkg)) return ''
+  const cacheDir = weCacheDir()
+  try { mkdirSync(cacheDir, { recursive: true }) } catch { return '' }
+  const id = basename(workshopDir)
+  const out = join(cacheDir, id + '.img')
+  const meta = out + '.meta'
+  const mtime = String(statSync(pkg).mtimeMs)
+  if (existsSync(out) && existsSync(meta)) {
+    try { if (readFileSync(meta, 'utf8') === mtime) return out } catch { /* 重新提取 */ }
+  }
+  let buf
+  try { buf = readFileSync(pkg) } catch { return '' }
+  const img = findEmbeddedImage(buf)
+  if (!img) return ''
+  try {
+    writeFileSync(out, img.data)
+    writeFileSync(meta, mtime)
+    return out
+  } catch {
+    return ''
+  }
+}
+
 async function listWeWallpapers() {
   const out = []
   for (const root of steamRoots()) {
@@ -375,7 +479,18 @@ async function handleStudio(ctx, req, res) {
       }
       case 'wallpaper-config': {
         const action = payload?.action ?? 'get'
-        if (action === 'set') return ok(res, { config: writeConfig(payload.config ?? {}) })
+        if (action === 'set') {
+          let next = writeConfig(payload.config ?? {})
+          // 场景壁纸：用 scene.pkg 内嵌的全分辨率宽幅背景替代方形封面，
+          // 与桌面端 Wallpaper Engine 显示一致（否则 contain/cover 都缺左右内容）。
+          if (next.type === 'scene' && next.source === 'we' && next.wallpaperId) {
+            const id = String(next.wallpaperId).replace(/^we:/, '')
+            const dir = id ? weWorkshopDir(id) : ''
+            const wide = dir ? extractSceneImage(dir) : ''
+            if (wide) next = writeConfig({ ...next, file: wide, localPath: wide })
+          }
+          return ok(res, { config: next })
+        }
         return ok(res, { config: readConfig() })
       }
       case 'skins':
