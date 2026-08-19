@@ -352,8 +352,8 @@ window.__ModuleLoader__.load({
               h('input', { type: 'range', min: 0, max: 30, step: 1, value: s.bg?.blurEmpty ?? 0, style: rangeInput(), onChange: (e) => setBgField('backgroundBlurEmpty', Number(e.target.value)) }),
             ]),
             h('div', { style: settingRow() }, [
-              h('label', { style: settingLabel() }, `有内容模糊 ${s.bg?.blurContent ?? 8}px`),
-              h('input', { type: 'range', min: 0, max: 30, step: 1, value: s.bg?.blurContent ?? 8, style: rangeInput(), onChange: (e) => { setBgField('backgroundBlurContent', Number(e.target.value)); setCfg({ blur: Number(e.target.value) }) } }),
+              h('label', { style: settingLabel() }, `壁纸模糊 ${s.bg?.enabled ? (s.bg?.blurContent ?? 8) : (cfg.blur ?? 0)}px`),
+              h('input', { type: 'range', min: 0, max: 30, step: 1, value: s.bg?.enabled ? (s.bg?.blurContent ?? 8) : (cfg.blur ?? 0), style: rangeInput(), onChange: (e) => { setBgField('backgroundBlurContent', Number(e.target.value)); setCfg({ blur: Number(e.target.value) }) } }),
             ]),
             h('div', { style: { fontSize: 11, color: 'var(--dsw-alias-label-secondary)', marginTop: 6 } },
               '背景遮挡与模糊作用于壁纸层；原 设置 → 皮肤中心 已合并至此。'),
@@ -386,7 +386,7 @@ window.__ModuleLoader__.load({
             ]),
             h('div', { style: { ...settingRow(), marginTop: 12, justifyContent: 'flex-end', gap: 8 } }, [
               h('button', { style: btnStyle(), onClick: async () => { await setCfg({ enabled: false, wallpaperId: '', localPath: '', file: '', poster: '', source: '' }); toast('已清除壁纸') } }, '清除壁纸'),
-              h('button', { style: btnStyle(), onClick: () => setCfg({ blur: 8, fit: 'cover', pos: 'center', scale: 1, surfaceAlpha: 0.7 }) }, '恢复默认'),
+              h('button', { style: btnStyle(), onClick: () => setCfg({ blur: 0, fit: 'cover', pos: 'center', scale: 1, surfaceAlpha: 0.7 }) }, '恢复默认'),
             ]),
           ]),
           // ── 皮肤（风格对齐原版皮肤中心网格卡片）──

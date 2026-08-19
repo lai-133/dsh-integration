@@ -30,7 +30,8 @@ function cfgFile() {
 }
 
 function readConfig() {
-  const def = { source: '', wallpaperId: '', localPath: '', fit: 'cover', pos: 'center', scale: 1, blur: 8, enabled: false }
+  // 默认值对齐桌面壁纸效果：不模糊（blur 0）、铺满（cover）、不放大（scale 1）
+  const def = { source: '', wallpaperId: '', localPath: '', fit: 'cover', pos: 'center', scale: 1, blur: 0, enabled: false }
   try {
     return { ...def, ...JSON.parse(readFileSync(cfgFile(), 'utf8')) }
   } catch {
