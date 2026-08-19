@@ -131,7 +131,15 @@ window.__ModuleLoader__.load({
         // 按类名模式统一压透明（哈希后缀随版本变化，结构名稳定），让壁纸透出。
         `[class*="_frame"],[class*="_root"],[class*="_card"],[class*="_panel"],` +
         `[class*="_pane"],[class*="_col"],[class*="_tabBar"],[class*="_searchBox"],` +
-        `[class*="aionui-"],[class*="_paneCard"],[class*="_bottomPanel"]{background-color:transparent!important}`
+        `[class*="aionui-"],[class*="_paneCard"],[class*="_bottomPanel"]{background-color:transparent!important}` +
+        // 输入框毛玻璃：包含输入框的卡片（uV2eYG_card 等）加模糊玻璃底，
+        // 压掉背后的亮壁纸（“周围发白”），输入内容清晰可读。
+        `div[class*="_card"]:has(textarea[class*="_input"]){` +
+        `background:rgba(232,236,245,0.32)!important;` +
+        `-webkit-backdrop-filter:blur(22px) saturate(1.4)!important;` +
+        `backdrop-filter:blur(22px) saturate(1.4)!important;` +
+        `border:1px solid rgba(255,255,255,0.25)!important;` +
+        `box-shadow:0 8px 32px rgba(20,26,60,0.18)!important}`
       document.head.appendChild(style)
     }
 
