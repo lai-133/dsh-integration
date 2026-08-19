@@ -128,10 +128,17 @@ window.__ModuleLoader__.load({
         `html,body{background-image:none!important;background-color:transparent!important}` +
         // DSH 壳 / aionui 面板大量使用硬编码浅色半透明表面（白块）：
         // rgba(255,255,255,.45~.6)、rgba(243,245,251,.5) 等，不走 token。
-        // 按类名模式统一压透明（哈希后缀随版本变化，结构名稳定），让壁纸透出。
+        // 按类名结构模式统一压透明（哈希后缀随版本变化，结构名稳定）。
+        // 注意：_button/_btn/_menu 故意排除（按钮保留强调色、菜单保持可读）。
         `[class*="_frame"],[class*="_root"],[class*="_card"],[class*="_panel"],` +
         `[class*="_pane"],[class*="_col"],[class*="_tabBar"],[class*="_searchBox"],` +
-        `[class*="aionui-"],[class*="_paneCard"],[class*="_bottomPanel"]{background-color:transparent!important}` +
+        `[class*="aionui-"],[class*="_paneCard"],[class*="_bottomPanel"],` +
+        `[class*="_session"],[class*="_workspace"],[class*="_sidebar"],[class*="_nav"],` +
+        `[class*="_list"],[class*="_message"],[class*="_bubble"],[class*="_item"],` +
+        `[class*="_row"],[class*="_main"],[class*="_content"],[class*="_layout"],` +
+        `[class*="_column"],[class*="_header"],[class*="_footer"],[class*="_toolbar"],` +
+        `[class*="_bar"],[class*="_scroll"],[class*="_inner"],[class*="_outer"],` +
+        `[class*="_wrap"],[class*="_container"]{background-color:transparent!important}` +
         // 输入框毛玻璃：包含输入框的卡片（uV2eYG_card 等）加模糊玻璃底，
         // 压掉背后的亮壁纸（“周围发白”），输入内容清晰可读。
         `div[class*="_card"]:has(textarea[class*="_input"]){` +
