@@ -15,7 +15,8 @@
 //        dsh-whale-widget     —— DeepSeek 余额小鲸鱼挂件（本地 fork：余额/今日已用/每轮消耗
 //                                 统计 + 工作状态气泡「正在思考/正在使用…」，取代 dsh-pet）
 //   5. pnpm approve-builds 放行原生构建（node-pty 等）；bundles 校准。
-//   6. 禁用 dsh-web-ui 全家桶内置的鲸鱼娘宠物（dsh-pet）——由 dsh-whale-widget 取代。
+//   6. 禁用 dsh-web-ui 全家桶中与本应用集成重叠的入口：dsh-pet（旧桌宠，由
+//      dsh-whale-widget 取代）、ui-community-plugins（社区插件索引，由 dshmarket 取代）。
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -239,28 +240,48 @@ function installPlugins() {
   }
 }
 
-// dsh-desktop 集成决策：dsh-web-ui 全家桶内置的鲸鱼娘宠物（dsh-pet）由
-// dsh-whale-widget（余额挂件 + 工作状态气泡）取代——在 profile 的用户 patch
-// 层禁用 pet entry（不动 dsh-web-ui-all 本体，恢复时删除本段即可）。
-const PET_DISABLE_PATCH = `# dsh-desktop 集成：禁用 dsh-web-ui 全家桶内置的鲸鱼娘宠物（dsh-pet），
+// dsh-desktop 集成决策：禁用 dsh-web-ui 全家桶里与本应用集成重叠的入口——
+//   1. pet（鲸鱼娘宠物）：由 dsh-whale-widget（余额挂件 + 工作状态气泡）取代；
+//   2. ui-community-plugins（社区插件索引卡片）：与 dshmarket（插件市场，支持
+//      一键安装/升级）功能重叠，保留功能更完整的插件市场。
+// 在 profile 的用户 patch 层禁用（不动 dsh-web-ui-all 本体，恢复时删除对应段即可）。
+const DISABLE_PATCHES = [
+  {
+    id: 'pet',
+    label: 'dsh-pet（旧桌宠）',
+    patch: `# dsh-desktop 集成：禁用 dsh-web-ui 全家桶内置的鲸鱼娘宠物（dsh-pet），
 # 由 dsh-whale-widget（余额挂件 + 工作状态气泡）取代。如想恢复，删除本段。
 - id: pet
   disabled: true
-`
+`,
+  },
+  {
+    id: 'ui-community-plugins',
+    label: '社区插件索引（community-plugins）',
+    patch: `# dsh-desktop 集成：禁用 dsh-web-ui 全家桶的「社区插件」索引卡片，
+# 与 dshmarket（插件市场，支持一键安装/升级）功能重叠，保留插件市场。如想恢复，删除本段。
+- id: ui-community-plugins
+  disabled: true
+`,
+  },
+]
 
-function disableLegacyPet() {
+function disableOverlappingEntries() {
   const file = join(profileDir, 'cordis.patch.yml')
   const text = existsSync(file) ? readFileSync(file, 'utf8') : ''
-  if (text.includes('- id: pet')) {
-    console.log('[setup-profile] dsh-pet 已在 profile patch 中禁用（幂等跳过）')
-    return
+  let next = text
+  for (const entry of DISABLE_PATCHES) {
+    if (next.includes(`- id: ${entry.id}`)) {
+      console.log(`[setup-profile] ${entry.label} 已在 profile patch 中禁用（幂等跳过）`)
+      continue
+    }
+    const trimmed = next.trim()
+    // 模板占位 `[]`（空数组）不能与块序列共存（YAML 解析错误），直接替换；
+    // 非空块序列则直接追加（块序列可自然延续）。
+    next = trimmed === '' || trimmed === '[]' ? entry.patch : trimmed + '\n' + entry.patch
   }
-  const trimmed = text.trim()
-  // 模板占位 `[]`（空数组）不能与块序列共存（YAML 解析错误），直接替换；
-  // 非空块序列则直接追加（块序列可自然延续）。
-  const next = trimmed === '' || trimmed === '[]' ? PET_DISABLE_PATCH : trimmed + '\n' + PET_DISABLE_PATCH
-  writeFileSync(file, next, 'utf8')
-  console.log(`[setup-profile] ✅ 已禁用 dsh-pet（旧桌宠）: ${file}`)
+  if (next !== text) writeFileSync(file, next, 'utf8')
+  console.log(`[setup-profile] ✅ 禁用项列表已确保: ${DISABLE_PATCHES.map((e) => e.label).join(' / ')}`)
 }
 
 function reconcileBundles() {
@@ -318,6 +339,6 @@ if (isMain) {
   installPlugins()
   approveBuilds()
   reconcileBundles()
-  disableLegacyPet()
+  disableOverlappingEntries()
   verify()
 }

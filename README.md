@@ -31,15 +31,17 @@
 | 项目 | 说明 | 作者 / 许可证 |
 |---|---|---|
 | [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar) | 服务化侧边栏工作台：文件资源管理器 + CodeMirror 编辑器、内嵌浏览器、真实终端（node-pty）、Git 面板、子代理拓扑、后台任务；`ctx.betterSidebar` 服务开放给其他插件注册 Tab / 文件预览器 | [omdsh-dev](https://github.com/omdsh-dev) · MIT |
-| [dsh-web-ui](https://github.com/zhu1090093659/dsh-web-ui) | DSH Web GUI 插件 + 皮肤全家桶：梁神模式 agent 预设、任务看板（含 cron 定时执行）、Git 图谱、右侧面板（预览/文件树/SCM）、移动端远程、SSH 运维、图像理解、实时吞吐、**皮肤中心 10 款皮肤**（内置鲸鱼娘宠物 dsh-pet 已由本应用禁用，见下） | [zhu1090093659](https://github.com/zhu1090093659) · Apache-2.0 |
+| [dsh-web-ui](https://github.com/zhu1090093659/dsh-web-ui) | DSH Web GUI 插件 + 皮肤全家桶：梁神模式 agent 预设、任务看板（含 cron 定时执行）、Git 图谱、右侧面板（预览/文件树/SCM）、移动端远程、SSH 运维、图像理解、实时吞吐、**皮肤中心 10 款皮肤**（内置鲸鱼娘宠物 dsh-pet 与社区插件索引已由本应用禁用，见下） | [zhu1090093659](https://github.com/zhu1090093659) · Apache-2.0 |
 | [ModLens](https://github.com/liustack/modlens) | 视觉引擎插件：给纯文本模型补上视觉，`modlens_read_image` 工具 + `(modlens vision)` 模型项 | [liustack](https://github.com/liustack) · MIT |
 | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) | 社区精选插件清单（本应用的「插件精选」画廊数据来源） | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin) · 清单文档 |
-| [dshmarket](https://github.com/dsh-market/dsh-market) | DSH 可视化插件市场：设置页内浏览、一键安装/升级社区插件 | [dsh-market](https://github.com/dsh-market) · MIT |
+| [dshmarket](https://github.com/dsh-market/dsh-market) | DSH 可视化插件市场：设置页内浏览、搜索、**一键安装/升级/卸载**社区插件（取代 dsh-web-ui 内置的「社区插件」静态索引，后者已禁用） | [dsh-market](https://github.com/dsh-market) · MIT |
 | [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) | 右下角余额鲸鱼挂件：DeepSeek API 余额（60s 自动刷新）、今日已用（余额差值记账 / 平台令牌实时双模式，峰谷定价）、每轮对话消耗统计；**工作状态气泡**（会话事件投影：正在思考 / 正在使用工具…，菜单可开关）；拖拽吸附、随机台词、音效。本应用集成 **本地定制 fork**（`third-party/DeepSeek-Balance-Whale-Widget`，`file:` 安装） | [MeteorNOX](https://github.com/MeteorNOX) · MIT |
 
 > 桌面端与网页端（`dsh web`）**共享同一 `DSH_HOME`**：会话、存储、profile 完全连续。桌面端默认监听 `127.0.0.1:3081`（环境变量 `DSH_DESKTOP_PORT` 可改），端口被占用自动顺延。
 
 > 🐋 界面里的鲸鱼只有一只：**余额鲸鱼挂件**（右下角）。dsh-web-ui 全家桶自带的「鲸鱼娘宠物」已由本应用禁用（`~/.dsh/profiles/web/cordis.patch.yml` 中 `pet` 置 `disabled: true`），其「工作状态气泡」功能已迁移到挂件上（菜单 → 工作状态）。想恢复旧宠物：删除该段 patch 后重启。
+
+> 🛒 设置页的插件入口只保留**插件市场（dshmarket）**；dsh-web-ui 的「社区插件」静态索引卡片（只列链接、需手动复制命令安装）与市场功能重叠，已一并禁用（`ui-community-plugins` 置 `disabled: true`）。想恢复：删除对应 patch 段后重启。
 
 > ⚠️ 本应用会为你的 web profile 安装上述第三方插件。**安装插件即以你的权限运行第三方代码**，安装前请自行审阅各仓库源码。
 

@@ -2,6 +2,12 @@
 
 本项目的所有显著变更都会记录在此文件。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [1.3.0] - 2026-08-31
+
+### 变更
+
+- **设置页插件入口去重**：禁用 dsh-web-ui 全家桶的「社区插件」静态索引卡片（`ui-community-plugins` 置 `disabled: true`）——它与 dshmarket（插件市场，支持一键安装/升级/卸载）功能重叠，保留功能更完整的插件市场。`setup-profile.mjs` 的禁用逻辑重构为通用列表（dsh-pet + 社区插件索引），新机器自动生效。
+
 ## [1.2.1] - 2026-08-31
 
 ### 修复
