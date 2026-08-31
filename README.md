@@ -59,7 +59,12 @@ dsh-desktop/
 │   ├── setup-profile.mjs  # 把集成插件装进 web profile（官方 dsh plugin 通道 + bundles 校准）
 │   ├── build-gallery.mjs  # 解析 awesome-dsh-plugin README → plugins.json
 │   ├── make-icon.mjs      # 从方形源图生成 PNG/ICO 图标
-│   └── ask-zhipu.mjs      # 直连智谱 GLM-4V-Flash 的调试工具（Key 读自本机 modlens 配置）
+│   ├── ask-zhipu.mjs      # 直连智谱 GLM-4V-Flash 的调试工具（Key 读自本机 modlens 配置）
+│   ├── cdp-*.mjs          # CDP 界面调试工具：点击探针（click/probe）、皮肤与壁纸诊断（skin/wallpaper/diag）、协作面板验证（collab）、综合验证（final）
+│   ├── fix-server.mjs     # 杀掉 3080 端口独立 dsh 服务器（rc.7 双写源），修复会话 seq 乱序
+│   ├── restart.mjs        # 重启 DSH 服务器 / 应用（托盘「重启」入口）
+│   ├── restart-app.ps1    # 延迟重启辅助：仅重启 dsh-desktop 实例
+│   └── restart-hard.ps1   # 延迟重启辅助：杀掉全部 electron/dsh 实例后重新拉起
 ├── start.cmd              # Windows 启动器（自动补装缺失依赖）
 ├── install.cmd            # Windows 一键安装
 └── package.json           # Electron + @deepseek-ai/dsh 运行时

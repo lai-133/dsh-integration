@@ -59,7 +59,12 @@ dsh-desktop/
 │   ├── setup-profile.mjs  # installs the integrated plugins into the web profile (official dsh plugin channel + bundle reconciliation)
 │   ├── build-gallery.mjs  # parses awesome-dsh-plugin README → plugins.json
 │   ├── make-icon.mjs      # generates PNG/ICO icons from a square source image
-│   └── ask-zhipu.mjs      # debugging tool for Zhipu GLM-4V-Flash (key read from local modlens config)
+│   ├── ask-zhipu.mjs      # debugging tool for Zhipu GLM-4V-Flash (key read from local modlens config)
+│   ├── cdp-*.mjs          # CDP UI debugging: click probes (click/probe), skin & wallpaper diagnostics (skin/wallpaper/diag), collab panel checks (collab), end-to-end verify (final)
+│   ├── fix-server.mjs     # kills the standalone 3080-port dsh server (rc.7 dual-write source) to fix session seq disorder
+│   ├── restart.mjs        # restarts the DSH server / app (tray "Restart" entry)
+│   ├── restart-app.ps1    # delayed restart helper: restarts only the dsh-desktop instance
+│   └── restart-hard.ps1   # delayed restart helper: kills all electron/dsh instances then relaunches
 ├── start.cmd              # Windows launcher (auto-installs missing deps)
 ├── install.cmd            # Windows one-command installer
 └── package.json           # Electron + @deepseek-ai/dsh runtime
