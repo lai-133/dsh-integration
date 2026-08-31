@@ -90,22 +90,6 @@ async function main() {
     process.exit(1)
   }
   log(`✅ 应用已启动并响应: http://127.0.0.1:${PORT}`)
-  // 顺带验证 studio host 路由
-  try {
-    const res = await new Promise((resolve, reject) => {
-      const req = http.request({ host: '127.0.0.1', port: PORT, path: '/studio/api/status', method: 'POST', headers: { 'content-type': 'application/json' } }, (r) => {
-        let body = ''
-        r.on('data', (c) => (body += c))
-        r.on('end', () => resolve({ status: r.statusCode, body }))
-      })
-      req.on('error', reject)
-      req.end('{}')
-    })
-    const parsed = JSON.parse(res.body)
-    log(`studio host: HTTP ${res.status} ok=${parsed.ok} weRoots=${parsed.value?.weRoots?.length} subs=${parsed.value?.subs}`)
-  } catch (error) {
-    log(`studio host 检查失败: ${error.message}`)
-  }
   if (debug) log('CDP: http://127.0.0.1:9222/json')
   log('完成。')
 }
