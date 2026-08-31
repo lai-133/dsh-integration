@@ -13,7 +13,7 @@
 ![Electron](https://img.shields.io/badge/Electron-43-47848F.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
 
-把 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）装进一个原生桌面窗口：**Electron 壳 + 自托管 `dsh web` 服务**。网页端全部功能原样保留，并预集成四个开源项目，附带系统托盘、原生通知、插件精选画廊等桌面能力。
+把 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）装进一个原生桌面窗口：**Electron 壳 + 自托管 `dsh web` 服务**。网页端全部功能原样保留，并预集成五个开源项目，附带系统托盘、原生通知、插件精选画廊等桌面能力。
 
 ## ✨ 特性
 
@@ -24,6 +24,7 @@
 - **单实例锁**：重复启动只聚焦已有窗口
 - **优雅关闭**：退出时干净停掉 dsh 服务进程
 - **插件精选画廊**：内置 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 全量清单（1054 插件 / 14 分类），支持搜索、跳转 GitHub、复制链接
+- **余额鲸鱼挂件**：右下角常驻小鲸鱼，显示 DeepSeek API 余额、今日已用（记账 / 实时令牌双模式）、每轮对话消耗统计；可拖拽吸附、按压弹跳、随机台词与音效（由 [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) 提供）
 
 ## 🧩 集成的开源项目
 
@@ -34,8 +35,11 @@
 | [ModLens](https://github.com/liustack/modlens) | 视觉引擎插件：给纯文本模型补上视觉，`modlens_read_image` 工具 + `(modlens vision)` 模型项 | [liustack](https://github.com/liustack) · MIT |
 | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) | 社区精选插件清单（本应用的「插件精选」画廊数据来源） | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin) · 清单文档 |
 | [dshmarket](https://github.com/dsh-market/dsh-market) | DSH 可视化插件市场：设置页内浏览、一键安装/升级社区插件 | [dsh-market](https://github.com/dsh-market) · MIT |
+| [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) | 右下角余额鲸鱼挂件：DeepSeek API 余额（60s 自动刷新）、今日已用（余额差值记账 / 平台令牌实时双模式，峰谷定价）、每轮对话消耗统计；拖拽吸附、随机台词、音效 | [MeteorNOX](https://github.com/MeteorNOX) · MIT |
 
 > 桌面端与网页端（`dsh web`）**共享同一 `DSH_HOME`**：会话、存储、profile 完全连续。桌面端默认监听 `127.0.0.1:3081`（环境变量 `DSH_DESKTOP_PORT` 可改），端口被占用自动顺延。
+
+> 🐋 界面里会出现**两只鲸鱼**：dsh-web-ui 全家桶自带的「鲸鱼娘宠物」（陪伴宠物，dock 常驻）与本应用集成的「余额鲸鱼挂件」（右下角余额/用量显示）。两者功能独立、互不依赖，可分别设置。
 
 > ⚠️ 本应用会为你的 web profile 安装上述第三方插件。**安装插件即以你的权限运行第三方代码**，安装前请自行审阅各仓库源码。
 
@@ -89,7 +93,7 @@ npm start
 npm install        # 安装 DSH 运行时（@deepseek-ai/dsh）+ Electron
 npm run setup      # 自动完成：① 初始化 ~/.dsh（DSH_HOME）骨架
                    # ② 自动准备 pnpm（PATH 已有则直接用；否则 corepack 生成 shim；再不行就本地 npm 安装）
-                   # ③ 把集成插件装进 web profile（dsh-better-sidebar / ModLens / dsh-web-ui / dshmarket）
+                   # ③ 把集成插件装进 web profile（dsh-better-sidebar / ModLens / dsh-web-ui / dshmarket / dsh-whale-widget）
                    # ④ 生成插件精选画廊数据
 npm start          # 启动桌面版
 ```
@@ -180,6 +184,7 @@ npm start              # 启动
 - [ModLens](https://github.com/liustack/modlens) by [liustack](https://github.com/liustack)（MIT）
 - [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) by [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin)
 - [dshmarket](https://github.com/dsh-market/dsh-market) by [dsh-market](https://github.com/dsh-market)（MIT）
+- [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) by [MeteorNOX](https://github.com/MeteorNOX)（MIT）
 
 ## 📜 License
 

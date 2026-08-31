@@ -13,7 +13,7 @@
 ![Electron](https://img.shields.io/badge/Electron-43-47848F.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
 
-Put [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) into a native desktop window: an **Electron shell + self-hosted `dsh web` service**. Every web feature is preserved, four open-source projects are pre-integrated, and desktop capabilities such as a system tray, native notifications and a plugin gallery are included.
+Put [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) into a native desktop window: an **Electron shell + self-hosted `dsh web` service**. Every web feature is preserved, five open-source projects are pre-integrated, and desktop capabilities such as a system tray, native notifications and a plugin gallery are included.
 
 ## ✨ Features
 
@@ -24,6 +24,7 @@ Put [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) in
 - **Single-instance lock**: a second launch focuses the existing window
 - **Graceful shutdown**: the dsh service process is stopped cleanly on quit
 - **Plugin gallery**: ships the full [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) list (1054 plugins / 14 categories) with search, GitHub links and copy actions
+- **Balance whale widget**: a resident little whale in the bottom-right corner showing DeepSeek API balance, today's usage (ledger / real-time token dual modes, peak-valley pricing) and per-turn cost stats; draggable with edge snapping, squash-and-stretch on press, random lines and sounds (provided by [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget))
 
 ## 🧩 Integrated open-source projects
 
@@ -34,8 +35,11 @@ Put [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) in
 | [ModLens](https://github.com/liustack/modlens) | Vision engine plugin: gives text-only models sight, `modlens_read_image` tool + `(modlens vision)` model entries | [liustack](https://github.com/liustack) · MIT |
 | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) | Curated community plugin list (data source of the in-app gallery) | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin) · list document |
 | [dshmarket](https://github.com/dsh-market/dsh-market) | Visual plugin market inside DSH settings: browse, one-click install/upgrade community plugins | [dsh-market](https://github.com/dsh-market) · MIT |
+| [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) | Bottom-right balance whale widget: DeepSeek API balance (60 s auto-refresh), today's usage (ledger / real-time platform token dual modes with peak-valley pricing), per-turn cost stats; draggable with edge snapping, random lines, sounds | [MeteorNOX](https://github.com/MeteorNOX) · MIT |
 
 > The desktop app **shares the same `DSH_HOME`** with the web UI (`dsh web`): sessions, storage and profiles are fully continuous. The desktop server listens on `127.0.0.1:3081` by default (override with `DSH_DESKTOP_PORT`); it falls forward automatically when the port is busy.
+
+> 🐋 There will be **two whales** in the UI: the "whale-girl pet" shipped inside the dsh-web-ui family (a companion pet docked on screen) and the integrated "balance whale widget" (bottom-right balance/usage display). They are functionally independent; each can be configured separately.
 
 > ⚠️ This app installs the third-party plugins above into your web profile. **Installing a plugin runs third-party code with your permissions** — review each repository before installing.
 
@@ -180,6 +184,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 - [ModLens](https://github.com/liustack/modlens) by [liustack](https://github.com/liustack) (MIT)
 - [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) by [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin)
 - [dshmarket](https://github.com/dsh-market/dsh-market) by [dsh-market](https://github.com/dsh-market) (MIT)
+- [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) by [MeteorNOX](https://github.com/MeteorNOX) (MIT)
 
 ## 📜 License
 

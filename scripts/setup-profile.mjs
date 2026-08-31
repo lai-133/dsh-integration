@@ -12,6 +12,7 @@
 //        @liustack/modlens    —— ModLens 视觉引擎
 //        @linxin666/dsh-web-ui-all —— dsh-web-ui 全家桶（梁神模式/看板/Git 图谱/皮肤中心…）
 //        dshmarket            —— DSH 插件市场（覆盖 awesome-dsh-plugin 精选清单的一键安装）
+//        dsh-whale-widget     —— DeepSeek 余额小鲸鱼挂件（余额/今日已用/每轮消耗统计）
 //   5. pnpm approve-builds 放行原生构建（node-pty 等）；bundles 校准。
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -32,6 +33,7 @@ const PLUGINS = [
   // 或网络受限环境失败/崩溃，且其绑定均为可选件（插件自带降级），故跳过构建脚本直装。
   ['dsh-web-ui 全家桶', '@linxin666/dsh-web-ui-all@0.1.19', { ignoreScripts: true }],
   ['dshmarket（插件市场）', 'dshmarket@1.10.1'],
+  ['dsh-whale-widget（余额鲸鱼挂件）', 'dsh-whale-widget@0.2.10'],
 ]
 
 const PROFILE_PACKAGE_JSON = {
@@ -53,6 +55,7 @@ const MIN_RELEASE_AGE_EXCLUDE = [
   '@liustack/*',
   'dsh-better-sidebar',
   'dshmarket',
+  'dsh-whale-widget',
 ]
 
 /** 需要放行构建脚本的原生依赖（node-pty 终端、ssh2/cpu-features SSH、cloudflared 隧道）。
