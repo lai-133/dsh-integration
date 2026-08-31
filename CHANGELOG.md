@@ -2,6 +2,33 @@
 
 本项目的所有显著变更都会记录在此文件。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [1.2.1] - 2026-08-31
+
+### 修复
+
+- **托盘「重启 DSH 服务器」不生效**：服务进程实际已重启，但端口不变时窗口加载链的同 URL 短路导致页面从不刷新，界面停留在旧状态（新插件/配置看似未生效）。重启后强制重新加载窗口（`loadURL(..., { cache: 'reload' })` 绕过缓存）。
+
+### 改进
+
+- 端到端自检（`DSH_DESKTOP_SMOKE=1`）新增 dsh-whale-widget 挂载证据（`.dshwv-root` / `.dshwv-status`）并纳入 PASS 门槛。
+
+## [1.2.0] - 2026-08-31
+
+### 变更
+
+- **移除旧桌宠 dsh-pet**：`setup-profile.mjs` 在 profile patch 层禁用 `pet`（幂等），旧鲸鱼娘宠物不再加载。
+- **工作状态气泡迁移至 dsh-whale-widget 定制 fork**（`third-party/DeepSeek-Balance-Whale-Widget`，v0.2.10-dsh.1，`file:` 集成入库）：宿主监听官方会话事件流投影状态（准备开始 / 等待模型响应 / 正在思考 / 正在使用 xxx / 处理工具结果 / 整理回复中 / 完成啦 / 执行失败 / 达到输出上限 / 执行意外中断），新增 `GET /dsh-whale/status.json`；客户端 1s 轮询在鲸鱼头顶显示气泡，菜单新增「工作状态」开关。
+
+### 清理
+
+- 删除测试残留：`head-final.png`、`plugins/dsh-studio/`（已下线插件）、本机 `shot1/`（3.2GB 截图）与顶层测试文件；`~/.dsh/cordis.patch.yml` 移除 `ui-skin-whale-song` 残留。
+
+## [1.1.0] - 2026-08-31
+
+### 新增
+
+- **集成 dsh-whale-widget**（余额鲸鱼挂件）：DeepSeek API 余额（60s 刷新）、今日已用（记账 / 实时令牌双模式，峰谷定价）、每轮对话消耗统计；拖拽吸附、随机台词、音效。
+
 ## [0.1.1] - 2026-08-17
 
 ### 改进（全新机器零手工步骤）

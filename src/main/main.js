@@ -130,20 +130,22 @@ function createMainWindow() {
 
 // 串行化加载链：onUrl 与 startServer 都可能触发 loadMainWindow，避免并发 loadURL 互相中止。
 let loadChain = Promise.resolve()
-function loadMainWindow(attempt = 0) {
+function loadMainWindow(attempt = 0, force = false) {
   if (!mainWindow) createMainWindow()
   const url = server?.status().url
   if (!url) return
   loadChain = loadChain.then(async () => {
     if (!mainWindow || mainWindow.isDestroyed()) return
     const current = mainWindow.webContents.getURL()
-    if (current.startsWith(url)) return
+    // 重启 DSH 服务器后端口通常不变，同 URL 短路会跳过刷新——force 时强制重新加载
+    // （cache: 'reload' 绕过 HTTP 缓存，确保拿到新 bundle 与新插件配置）。
+    if (!force && current.startsWith(url)) return
     try {
-      await mainWindow.loadURL(url)
+      await mainWindow.loadURL(url, { cache: 'reload' })
       await smokeCheck()
     } catch (error) {
       console.error(`[dsh-desktop] 加载 ${url} 失败（第 ${attempt + 1} 次）:`, error?.message || error)
-      if (attempt < 8) setTimeout(() => loadMainWindow(attempt + 1), 1500)
+      if (attempt < 8) setTimeout(() => loadMainWindow(attempt + 1, force), 1500)
     }
   })
   return loadChain
@@ -171,6 +173,8 @@ async function smokeCheck() {
         sshBundle: has('dsh-ssh/client.js'),
         skinCenterBundle: has('dsh-client-ui-skin-center/client.js'),
         petBundle: has('dsh-pet/client.js'),
+        whaleWidget: !!document.querySelector('.dshwv-root'),
+        whaleStatusBubble: !!document.querySelector('.dshwv-status'),
         textHasTaskBoard: text.includes('任务看板'),
         textHasSkinCenter: text.includes('皮肤中心'),
         textHasSsh: text.includes('SSH'),
@@ -180,7 +184,7 @@ async function smokeCheck() {
       }
     })()`)
     console.log('[smoke] 证据:', JSON.stringify(result, null, 2))
-    const gate = result.betterSidebarMounted && result.betterSidebarBundle && result.modlensBundle && result.dshWebUiBundle && result.dshmarketBundle
+    const gate = result.betterSidebarMounted && result.betterSidebarBundle && result.modlensBundle && result.dshWebUiBundle && result.dshmarketBundle && result.whaleWidget
     console.log(`[smoke] RESULT: ${gate ? 'PASS' : 'FAIL'}`)
     quitting = true
     app.exit(gate ? 0 : 1)
@@ -246,10 +250,10 @@ function showMainWindow() {
 
 async function restartServer() {
   if (server?.status().running) {
-    const mainUrl = server.status().url
     try {
       await server.restart()
-      loadMainWindow()
+      // force=true：重启后端口通常不变，必须强制刷新窗口（否则停留在旧页面，看似没重启）
+      loadMainWindow(0, true)
     } catch (error) {
       startupError = String(error?.message || error)
       loadErrorPage()
