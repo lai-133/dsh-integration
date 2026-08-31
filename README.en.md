@@ -24,22 +24,22 @@ Put [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) in
 - **Single-instance lock**: a second launch focuses the existing window
 - **Graceful shutdown**: the dsh service process is stopped cleanly on quit
 - **Plugin gallery**: ships the full [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) list (1054 plugins / 14 categories) with search, GitHub links and copy actions
-- **Balance whale widget**: a resident little whale in the bottom-right corner showing DeepSeek API balance, today's usage (ledger / real-time token dual modes, peak-valley pricing) and per-turn cost stats; draggable with edge snapping, squash-and-stretch on press, random lines and sounds (provided by [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget))
+- **Balance whale widget**: a resident little whale in the bottom-right corner showing DeepSeek API balance, today's usage (ledger / real-time token dual modes, peak-valley pricing) and per-turn cost stats; **work-status bubbles** (thinking / using a tool…); draggable with edge snapping, squash-and-stretch on press, random lines and sounds (provided by [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget), bundled as a customized local fork)
 
 ## 🧩 Integrated open-source projects
 
 | Project | Description | Author / License |
 |---|---|---|
 | [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar) | Service-based sidebar workbench: file explorer + CodeMirror editor, embedded browser, real terminal (node-pty), Git panel, subagent topology, background jobs; the `ctx.betterSidebar` service lets other plugins register tabs / file viewers | [omdsh-dev](https://github.com/omdsh-dev) · MIT |
-| [dsh-web-ui](https://github.com/zhu1090093659/dsh-web-ui) | DSH Web GUI plugin & skin family: Liang-shen mode agent preset, task board (cron execution included), Git graph, right-side panel (preview/files/SCM), mobile remote, SSH ops, image understanding, whale-girl pet, live stats, **skin center with 10 skins** | [zhu1090093659](https://github.com/zhu1090093659) · Apache-2.0 |
+| [dsh-web-ui](https://github.com/zhu1090093659/dsh-web-ui) | DSH Web GUI plugin & skin family: Liang-shen mode agent preset, task board (cron execution included), Git graph, right-side panel (preview/files/SCM), mobile remote, SSH ops, image understanding, live stats, **skin center with 10 skins** (built-in whale-girl pet dsh-pet is disabled by this app, see below) | [zhu1090093659](https://github.com/zhu1090093659) · Apache-2.0 |
 | [ModLens](https://github.com/liustack/modlens) | Vision engine plugin: gives text-only models sight, `modlens_read_image` tool + `(modlens vision)` model entries | [liustack](https://github.com/liustack) · MIT |
 | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) | Curated community plugin list (data source of the in-app gallery) | [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin) · list document |
 | [dshmarket](https://github.com/dsh-market/dsh-market) | Visual plugin market inside DSH settings: browse, one-click install/upgrade community plugins | [dsh-market](https://github.com/dsh-market) · MIT |
-| [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) | Bottom-right balance whale widget: DeepSeek API balance (60 s auto-refresh), today's usage (ledger / real-time platform token dual modes with peak-valley pricing), per-turn cost stats; draggable with edge snapping, random lines, sounds | [MeteorNOX](https://github.com/MeteorNOX) · MIT |
+| [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) | Bottom-right balance whale widget: DeepSeek API balance (60 s auto-refresh), today's usage (ledger / real-time platform token dual modes with peak-valley pricing), per-turn cost stats; **work-status bubbles** (session-event projection: thinking / using a tool…, toggle in the menu); draggable with edge snapping, random lines, sounds. This app ships a **customized local fork** (`third-party/DeepSeek-Balance-Whale-Widget`, installed via `file:`) | [MeteorNOX](https://github.com/MeteorNOX) · MIT |
 
 > The desktop app **shares the same `DSH_HOME`** with the web UI (`dsh web`): sessions, storage and profiles are fully continuous. The desktop server listens on `127.0.0.1:3081` by default (override with `DSH_DESKTOP_PORT`); it falls forward automatically when the port is busy.
 
-> 🐋 There will be **two whales** in the UI: the "whale-girl pet" shipped inside the dsh-web-ui family (a companion pet docked on screen) and the integrated "balance whale widget" (bottom-right balance/usage display). They are functionally independent; each can be configured separately.
+> 🐋 There is only **one whale** in the UI: the balance whale widget (bottom-right). The "whale-girl pet" shipped inside the dsh-web-ui family is disabled by this app (`pet` set to `disabled: true` in `~/.dsh/profiles/web/cordis.patch.yml`), and its **work-status bubble** feature was migrated to the widget (menu → Work status). To restore the old pet, remove that patch section and restart.
 
 > ⚠️ This app installs the third-party plugins above into your web profile. **Installing a plugin runs third-party code with your permissions** — review each repository before installing.
 

@@ -1,4 +1,4 @@
-// setup-profile.mjs — 把四个开源集成装进 DSH 的 web profile（与网页端共享 DSH_HOME）。
+// setup-profile.mjs — 把开源集成装进 DSH 的 web profile（与网页端共享 DSH_HOME）。
 //
 // 全新机器零手工步骤：
 //   0. 自动初始化 DSH_HOME 骨架（~/.dsh：profiles / sessions / storages）；
@@ -12,8 +12,10 @@
 //        @liustack/modlens    —— ModLens 视觉引擎
 //        @linxin666/dsh-web-ui-all —— dsh-web-ui 全家桶（梁神模式/看板/Git 图谱/皮肤中心…）
 //        dshmarket            —— DSH 插件市场（覆盖 awesome-dsh-plugin 精选清单的一键安装）
-//        dsh-whale-widget     —— DeepSeek 余额小鲸鱼挂件（余额/今日已用/每轮消耗统计）
+//        dsh-whale-widget     —— DeepSeek 余额小鲸鱼挂件（本地 fork：余额/今日已用/每轮消耗
+//                                 统计 + 工作状态气泡「正在思考/正在使用…」，取代 dsh-pet）
 //   5. pnpm approve-builds 放行原生构建（node-pty 等）；bundles 校准。
+//   6. 禁用 dsh-web-ui 全家桶内置的鲸鱼娘宠物（dsh-pet）——由 dsh-whale-widget 取代。
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -33,7 +35,8 @@ const PLUGINS = [
   // 或网络受限环境失败/崩溃，且其绑定均为可选件（插件自带降级），故跳过构建脚本直装。
   ['dsh-web-ui 全家桶', '@linxin666/dsh-web-ui-all@0.1.19', { ignoreScripts: true }],
   ['dshmarket（插件市场）', 'dshmarket@1.10.1'],
-  ['dsh-whale-widget（余额鲸鱼挂件）', 'dsh-whale-widget@0.2.10'],
+  // 本地 fork（third-party/DeepSeek-Balance-Whale-Widget）：上游 0.2.10 + 工作状态气泡定制
+  ['dsh-whale-widget（余额鲸鱼挂件）', `file:${join(root, 'third-party', 'DeepSeek-Balance-Whale-Widget')}`],
 ]
 
 const PROFILE_PACKAGE_JSON = {
@@ -236,6 +239,30 @@ function installPlugins() {
   }
 }
 
+// dsh-desktop 集成决策：dsh-web-ui 全家桶内置的鲸鱼娘宠物（dsh-pet）由
+// dsh-whale-widget（余额挂件 + 工作状态气泡）取代——在 profile 的用户 patch
+// 层禁用 pet entry（不动 dsh-web-ui-all 本体，恢复时删除本段即可）。
+const PET_DISABLE_PATCH = `# dsh-desktop 集成：禁用 dsh-web-ui 全家桶内置的鲸鱼娘宠物（dsh-pet），
+# 由 dsh-whale-widget（余额挂件 + 工作状态气泡）取代。如想恢复，删除本段。
+- id: pet
+  disabled: true
+`
+
+function disableLegacyPet() {
+  const file = join(profileDir, 'cordis.patch.yml')
+  const text = existsSync(file) ? readFileSync(file, 'utf8') : ''
+  if (text.includes('- id: pet')) {
+    console.log('[setup-profile] dsh-pet 已在 profile patch 中禁用（幂等跳过）')
+    return
+  }
+  const trimmed = text.trim()
+  // 模板占位 `[]`（空数组）不能与块序列共存（YAML 解析错误），直接替换；
+  // 非空块序列则直接追加（块序列可自然延续）。
+  const next = trimmed === '' || trimmed === '[]' ? PET_DISABLE_PATCH : trimmed + '\n' + PET_DISABLE_PATCH
+  writeFileSync(file, next, 'utf8')
+  console.log(`[setup-profile] ✅ 已禁用 dsh-pet（旧桌宠）: ${file}`)
+}
+
 function reconcileBundles() {
   // `dsh plugin add` 在 pnpm 退出码为 0 时才 reconcile dsh.profile.bundles；
   // 原生依赖（ssh2/cpu-features）构建失败会让 pnpm 返回非零，导致插件装了却没挂载。
@@ -291,5 +318,6 @@ if (isMain) {
   installPlugins()
   approveBuilds()
   reconcileBundles()
+  disableLegacyPet()
   verify()
 }

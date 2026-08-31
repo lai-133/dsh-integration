@@ -4,8 +4,11 @@ node_modules/
 # local toolchain
 .tools/
 
-# third-party reference clones (not part of this repo)
-third-party/
+# third-party reference clones (not part of this repo);
+# except DeepSeek-Balance-Whale-Widget — the customized dsh-whale-widget fork
+# this repo integrates (installed into the web profile via `file:` spec)
+third-party/*
+!third-party/DeepSeek-Balance-Whale-Widget/
 
 # personal icon overrides (drop your own icon-*.png / icon.ico here)
 src/main/assets/whale/
