@@ -1,8 +1,8 @@
 @echo off
 rem dsh-desktop launcher: auto-installs missing deps, auto-runs setup, then starts the app.
 cd /d "%~dp0"
-where node >nul 2>nul || (echo [ERROR] Node.js not found on PATH. Install Node.js >= 20 first. & pause & exit /b 1)
-rem 国内镜像（海外用户可删除下面两行）
+where node >nul 2>nul || (echo [ERROR] Node.js not found on PATH. Install Node.js ^>= 20 first. & pause & exit /b 1)
+rem CN mirror (delete the next two lines if you are outside China)
 if not defined ELECTRON_MIRROR set ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
 if not defined npm_config_registry set npm_config_registry=https://registry.npmmirror.com
 if not exist "node_modules\@deepseek-ai\dsh" (

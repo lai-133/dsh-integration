@@ -32,10 +32,6 @@ const PLUGINS = [
   // 或网络受限环境失败/崩溃，且其绑定均为可选件（插件自带降级），故跳过构建脚本直装。
   ['dsh-web-ui 全家桶', '@linxin666/dsh-web-ui-all@0.1.19', { ignoreScripts: true }],
   ['dshmarket（插件市场）', 'dshmarket@1.10.1'],
-  // 协作看板：跨会话/子代理共享任务队列 + 交接摘要（社区项目，MIT）
-  ['dsh-task-relay（任务接力）', 'github:LeslieWylie/dsh-task-relay'],
-  // 本仓库自带工作台增强：侧边栏「皮肤中心」入口（WE/本地壁纸、大小/位置/模糊）+「协作」看板
-  ['dsh-studio（工作台增强）', `file:${join(root, 'plugins', 'dsh-studio')}`],
 ]
 
 const PROFILE_PACKAGE_JSON = {
@@ -174,33 +170,64 @@ function patchPnpmWorkspace() {
   console.log(`[setup-profile] pnpm-workspace.yaml 已更新: ${file}`)
 }
 
+function readDeps() {
+  return JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')).dependencies ?? {}
+}
+
+// 识别安装目标名：`@scope/name@ver` → @scope/name；`file:路径` → 读目标 package.json；
+// `github:owner/repo` → 取仓库目录名（仅用于“已存在”的幂等判断）。
+function specName(spec) {
+  if (spec.startsWith('file:')) {
+    try {
+      return JSON.parse(readFileSync(join(spec.slice(5), 'package.json'), 'utf8')).name
+    } catch {
+      return null
+    }
+  }
+  if (spec.startsWith('github:')) {
+    const m = spec.match(/github:[\w.-]+\/([\w.-]+)/)
+    return m ? m[1] : null
+  }
+  return spec.startsWith('@') ? `@${spec.split('@')[1]}` : spec.split('@')[0]
+}
+
 function installPlugins() {
   for (const entry of PLUGINS) {
     const [label, spec, flags] = entry
-    const name = spec.startsWith('@') ? `@${spec.split('@')[1]}` : spec.split('@')[0]
+    const name = specName(spec)
     const addArgs = flags?.ignoreScripts ? [spec, '--ignore-scripts'] : [spec]
-    let code = run('node', [dshBin, 'plugin', '--profile', 'web', 'add', ...addArgs])
-    let landed = name in (JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')).dependencies ?? {})
-    if (code !== 0 && !landed) {
-      // 网络/解析抖动：先收敛依赖树，再重试一次
-      console.warn(`[setup-profile] ${label} 首次安装返回 ${code}，重试…`)
-      run('pnpm', ['install'], { cwd: profileDir, quiet: true })
-      code = run('node', [dshBin, 'plugin', '--profile', 'web', 'add', ...addArgs])
-      landed = name in (JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')).dependencies ?? {})
+    // 落盘判定不能只看 exit code：pnpm 11 会因 ERR_PNPM_IGNORED_BUILDS 返回非零；
+    // 而 file:/github: 等非 registry 写法若按 `spec.split('@')[0]` 取名会误判未安装
+    // （安装成功却报 ❌（exit 0））。判定 = 出现了新依赖，或目标已存在（幂等重跑）。
+    const attempt = () => {
+      const before = readDeps()
+      const code = run('node', [dshBin, 'plugin', '--profile', 'web', 'add', ...addArgs])
+      const deps = readDeps()
+      const landed = (name !== null && name in deps) || Object.keys(deps).some((k) => !(k in before))
+      return { code, landed }
     }
-    if (code !== 0 && !landed) {
+    let r = attempt()
+    if (r.code !== 0 && !r.landed) {
+      // 网络/解析抖动：先收敛依赖树，再重试一次
+      console.warn(`[setup-profile] ${label} 首次安装返回 ${r.code}，重试…`)
+      run('pnpm', ['install'], { cwd: profileDir, quiet: true })
+      r = attempt()
+    }
+    if (r.code !== 0 && !r.landed) {
       // 最后兜底：跳过构建脚本直装（原生件缺失时插件自带降级），依赖落盘后由 bundles 校准挂载
       console.warn(`[setup-profile] ${label} 构建脚本异常，改用 --ignore-scripts 安装（原生特性降级）…`)
-      code = run('pnpm', ['add', spec, '--ignore-scripts'], { cwd: profileDir })
-      landed = name in (JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')).dependencies ?? {})
+      const before = readDeps()
+      r.code = run('pnpm', ['add', spec, '--ignore-scripts'], { cwd: profileDir })
+      const deps = readDeps()
+      r.landed = (name !== null && name in deps) || Object.keys(deps).some((k) => !(k in before))
     }
-    if (code === 0 && landed) {
+    if (r.code === 0 && r.landed) {
       console.log(`[setup-profile] ✅ ${label} 已安装（${spec}）`)
-    } else if (landed) {
+    } else if (r.landed) {
       // 依赖已写入 package.json（构建脚本失败不影响安装结果）
-      console.warn(`[setup-profile] ⚠️ ${label} 依赖已写入，但 pnpm 返回 ${code}（多为原生构建失败，可忽略）`)
+      console.warn(`[setup-profile] ⚠️ ${label} 依赖已写入，但 pnpm 返回 ${r.code}（多为原生构建失败，可忽略）`)
     } else {
-      console.error(`[setup-profile] ❌ 安装 ${label} 失败（exit ${code}）`)
+      console.error(`[setup-profile] ❌ 安装 ${label} 失败（exit ${r.code}）`)
       process.exitCode = 1
     }
   }

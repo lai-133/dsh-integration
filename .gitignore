@@ -25,6 +25,9 @@ out/
 studio-*.png
 desktop-*.png
 screen-*.png
+taskbar-*.png
+titlebar-*.png
+window-hicon.png
 
 # stray pnpm artifacts at project root (project is npm-based)
 pnpm-lock.yaml
